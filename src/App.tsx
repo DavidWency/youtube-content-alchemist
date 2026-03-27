@@ -9,6 +9,7 @@ import ReactMarkdown from 'react-markdown';
 import { Youtube, Wand2, Loader2, FileText, AlertCircle, Copy, Check } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { YoutubeTranscript } from 'youtube-transcript';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -38,31 +39,30 @@ export default function App() {
         transcript = manualTranscript;
         if (!transcript.trim()) throw new Error('请提供视频字幕内容');
       } else {
-        // 1. Fetch transcript from our backend
-        const transcriptResponse = await fetch(`/api/transcript?url=${encodeURIComponent(url)}`);
-        
-        if (!transcriptResponse.ok) {
-          const errorData = await transcriptResponse.json().catch(() => ({ error: 'Failed to fetch transcript' }));
-          const errorMessage = errorData.error || 'Failed to fetch transcript';
+        // 1. Fetch transcript directly in browser using youtube-transcript
+        try {
+          const transcriptData = await YoutubeTranscript.fetchTranscript(url);
+          transcript = transcriptData.map((item: { text: string }) => item.text).join(' ');
+        } catch (err: any) {
+          console.error('Transcript fetch error:', err);
           
-          if (errorMessage.includes('too many requests') || errorMessage.includes('captcha')) {
-            setManualMode(true);
-            throw new Error('YouTube 暂时限制了自动抓取（触发了人机验证）。请切换到“手动模式”并粘贴视频字幕。');
+          // Check if it's a captcha/rate limit error
+          if (err.message.includes('captcha') || err.message.includes('too many requests')) {
+            throw new Error('YouTube 触发了人机验证。请切换到"手动模式"并粘贴视频字幕。');
           }
           
-          throw new Error(errorMessage);
+          throw new Error(err.message || '无法获取字幕。请尝试其他视频，或使用"手动模式"粘贴字幕。');
         }
-        
-        const transcriptData = await transcriptResponse.json();
-        transcript = transcriptData.transcript;
       }
 
       // 2. Use Gemini to generate the article
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+      const apiKey = (import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY) as string;
+      if (!apiKey) throw new Error('Missing GEMINI_API_KEY. Please set VITE_GEMINI_API_KEY in your environment.');
+      const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
         model: "gemini-3.1-pro-preview",
-        contents: `You are a professional content writer. Based on the following YouTube video transcript, generate a high-quality, structured Markdown article. 
-        
+        contents: `You are a professional content writer. Based on the following YouTube video transcript, generate a high-quality, structured Markdown article.
+
         Requirements:
         - Use clear H2 headings for different sections.
         - The article should be engaging and informative.
@@ -76,7 +76,7 @@ export default function App() {
 
       const text = response.text;
       if (!text) throw new Error('AI failed to generate content');
-      
+
       setSummary(text);
     } catch (err: any) {
       console.error(err);
@@ -116,7 +116,7 @@ export default function App() {
               将视频转化为深度文章
             </h1>
             <p className="text-gray-500 text-lg max-w-2xl mx-auto">
-              输入 YouTube 链接或直接粘贴字幕，AI 将为您生成一篇结构清晰的 Markdown 文章。
+              输入 YouTube 链接或直接粘贴字幕,AI 将为您生成一篇结构清晰的 Markdown 文章。
             </p>
           </div>
 
@@ -163,8 +163,8 @@ export default function App() {
                     disabled={loading}
                     className={cn(
                       "px-8 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all duration-200",
-                      loading 
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
+                      loading
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                         : "bg-emerald-600 text-white hover:bg-emerald-700 active:scale-[0.98] shadow-lg shadow-emerald-500/20"
                     )}
                   >
@@ -198,8 +198,8 @@ export default function App() {
                       disabled={loading}
                       className={cn(
                         "px-8 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all duration-200",
-                        loading 
-                          ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
+                        loading
+                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                           : "bg-emerald-600 text-white hover:bg-emerald-700 active:scale-[0.98] shadow-lg shadow-emerald-500/20"
                       )}
                     >
