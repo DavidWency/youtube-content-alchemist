@@ -85,7 +85,8 @@ async function fetchYouTubeTranscript(videoId) {
   });
 
   if (!response.ok) {
-    throw new Error(`YouTube API returned ${response.status}`);
+    const errorText = await response.text();
+    throw new Error(`YouTube API returned ${response.status}: ${errorText}`);
   }
 
   const data = await response.json();
