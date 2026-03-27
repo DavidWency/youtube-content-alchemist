@@ -115,8 +115,11 @@ ${transcript}`
       }
 
       const data = await response.json();
-      const text = data.choices?.[0]?.message?.content;
+      let text = data.choices?.[0]?.message?.content;
       if (!text) throw new Error('AI failed to generate content');
+
+      // Remove thinking tags and their content
+      text = text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
 
       setSummary(text);
     } catch (err: any) {
