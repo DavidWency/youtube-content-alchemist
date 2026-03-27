@@ -82,7 +82,7 @@ export default function App() {
       const apiKey = import.meta.env.VITE_MINIMAX_API_KEY as string;
       if (!apiKey) throw new Error('Missing MINIMAX API KEY. Please set VITE_MINIMAX_API_KEY in your environment.');
       
-      const response = await fetch('https://api.minimax.chat/v1/text/chatcompletion_v2', {
+      const response = await fetch('https://api.minimaxi.com/v1/text/chatcompletion_v2', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
