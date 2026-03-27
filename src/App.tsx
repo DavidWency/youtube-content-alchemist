@@ -4,7 +4,6 @@
  */
 
 import React, { useState } from 'react';
-import { GoogleGenAI } from "@google/genai";
 import ReactMarkdown from 'react-markdown';
 import { Youtube, Wand2, Loader2, FileText, AlertCircle, Copy, Check } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
@@ -79,26 +78,44 @@ export default function App() {
         }
       }
 
-      // 2. Use Gemini to generate the article
-      const apiKey = (import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY) as string;
-      if (!apiKey) throw new Error('Missing GEMINI_API_KEY. Please set VITE_GEMINI_API_KEY in your environment.');
-      const ai = new GoogleGenAI({ apiKey });
-      const response = await ai.models.generateContent({
-        model: "gemini-3.1-pro-preview",
-        contents: `You are a professional content writer. Based on the following YouTube video transcript, generate a high-quality, structured Markdown article.
+      // 2. Use Minimax to generate the article
+      const apiKey = import.meta.env.VITE_MINIMAX_API_KEY as string;
+      if (!apiKey) throw new Error('Missing MINIMAX API KEY. Please set VITE_MINIMAX_API_KEY in your environment.');
+      
+      const response = await fetch('https://api.minimax.chat/v1/text/chatcompletion_v2', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: "abab6.5s-chat",
+          messages: [
+            {
+              role: "user",
+              content: `你是一位专业的内容写手。根据以下YouTube视频字幕，生成一篇高质量、结构化的中文Markdown文章。
 
-        Requirements:
-        - Use clear H2 headings for different sections.
-        - The article should be engaging and informative.
-        - Maintain the original tone but improve the flow.
-        - Include a brief introduction and a conclusion.
-        - Language: Chinese (Simplified) as requested by the user.
+要求：
+- 使用清晰的H2标题划分不同章节
+- 文章要有吸引力且信息丰富
+- 保持原视频的语气和风格，但提升可读性
+- 包含简介和总结
+- 语言：简体中文
 
-        Transcript:
-        ${transcript}`,
+字幕内容：
+${transcript}`
+            }
+          ]
+        }),
       });
 
-      const text = response.text;
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Minimax API error: ${response.status} - ${errorText}`);
+      }
+
+      const data = await response.json();
+      const text = data.choices?.[0]?.message?.content;
       if (!text) throw new Error('AI failed to generate content');
 
       setSummary(text);
