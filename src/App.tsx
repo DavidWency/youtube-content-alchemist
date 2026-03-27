@@ -40,18 +40,42 @@ export default function App() {
         if (!transcript.trim()) throw new Error('请提供视频字幕内容');
       } else {
         // 1. Fetch transcript directly in browser using youtube-transcript
+        // Try with browser fetch first, then try CORS proxy as fallback
+        let fetchError = null;
+        
+        // Method 1: Direct fetch (may fail due to CORS)
         try {
           const transcriptData = await YoutubeTranscript.fetchTranscript(url);
           transcript = transcriptData.map((item: { text: string }) => item.text).join(' ');
         } catch (err: any) {
-          console.error('Transcript fetch error:', err);
-          
-          // Check if it's a captcha/rate limit error
-          if (err.message.includes('captcha') || err.message.includes('too many requests')) {
+          console.error('Direct transcript fetch error:', err);
+          fetchError = err;
+        }
+        
+        // Method 2: Try via our Worker as CORS proxy
+        if (!transcript && fetchError) {
+          const apiBase = import.meta.env.VITE_API_URL;
+          if (apiBase) {
+            try {
+              const resp = await fetch(`${apiBase}/api/transcript?url=${encodeURIComponent(url)}`);
+              const data = await resp.json();
+              if (data.transcript) {
+                transcript = data.transcript;
+              } else {
+                throw new Error(data.error || 'Worker returned no transcript');
+              }
+            } catch (workerErr: any) {
+              console.error('Worker transcript fetch error:', workerErr);
+              fetchError = workerErr;
+            }
+          }
+        }
+        
+        if (!transcript) {
+          if (fetchError?.message?.includes('captcha') || fetchError?.message?.includes('too many requests')) {
             throw new Error('YouTube 触发了人机验证。请切换到"手动模式"并粘贴视频字幕。');
           }
-          
-          throw new Error(err.message || '无法获取字幕。请尝试其他视频，或使用"手动模式"粘贴字幕。');
+          throw new Error(fetchError?.message || '无法获取字幕。请尝试其他视频，或使用"手动模式"粘贴字幕。');
         }
       }
 
