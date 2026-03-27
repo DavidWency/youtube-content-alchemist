@@ -5,19 +5,22 @@
 
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Wand2, Loader2, FileText, AlertCircle, Copy, Check } from 'lucide-react';
+import { Youtube, Wand2, Loader2, FileText, AlertCircle, Copy, Check } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { YoutubeTranscript } from 'youtube-transcript';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 export default function App() {
+  const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [summary, setSummary] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [manualMode, setManualMode] = useState(false);
   const [manualTranscript, setManualTranscript] = useState('');
 
   const handleGenerate = async (e: React.FormEvent) => {
@@ -29,8 +32,51 @@ export default function App() {
     setSummary(null);
 
     try {
-      const transcript = manualTranscript;
-      if (!transcript.trim()) throw new Error('请先粘贴视频字幕内容');
+      let transcript = '';
+
+      if (manualMode) {
+        transcript = manualTranscript;
+        if (!transcript.trim()) throw new Error('请提供视频字幕内容');
+      } else {
+        // 1. Fetch transcript directly in browser using youtube-transcript
+        // Try with browser fetch first, then try CORS proxy as fallback
+        let fetchError = null;
+        
+        // Method 1: Direct fetch (may fail due to CORS)
+        try {
+          const transcriptData = await YoutubeTranscript.fetchTranscript(url);
+          transcript = transcriptData.map((item: { text: string }) => item.text).join(' ');
+        } catch (err: any) {
+          console.error('Direct transcript fetch error:', err);
+          fetchError = err;
+        }
+        
+        // Method 2: Try via our Worker as CORS proxy
+        if (!transcript && fetchError) {
+          const apiBase = import.meta.env.VITE_API_URL;
+          if (apiBase) {
+            try {
+              const resp = await fetch(`${apiBase}/api/transcript?url=${encodeURIComponent(url)}`);
+              const data = await resp.json();
+              if (data.transcript) {
+                transcript = data.transcript;
+              } else {
+                throw new Error(data.error || 'Worker returned no transcript');
+              }
+            } catch (workerErr: any) {
+              console.error('Worker transcript fetch error:', workerErr);
+              fetchError = workerErr;
+            }
+          }
+        }
+        
+        if (!transcript) {
+          if (fetchError?.message?.includes('captcha') || fetchError?.message?.includes('too many requests')) {
+            throw new Error('YouTube 触发了人机验证。请切换到"手动模式"并粘贴视频字幕。');
+          }
+          throw new Error(fetchError?.message || '无法获取字幕。请尝试其他视频，或使用"手动模式"粘贴字幕。');
+        }
+      }
 
       // 2. Use Minimax to generate the article
       const apiKey = import.meta.env.VITE_MINIMAX_API_KEY as string;
@@ -118,19 +164,44 @@ ${transcript}`
             </p>
           </div>
 
+          <div className="flex justify-center mb-6">
+            <div className="inline-flex p-1 bg-gray-100 rounded-xl">
+              <button
+                onClick={() => setManualMode(false)}
+                className={cn(
+                  "px-4 py-2 rounded-lg text-sm font-medium transition-all",
+                  !manualMode ? "bg-white shadow-sm text-emerald-700" : "text-gray-500 hover:text-gray-700"
+                )}
+              >
+                自动抓取
+              </button>
+              <button
+                onClick={() => setManualMode(true)}
+                className={cn(
+                  "px-4 py-2 rounded-lg text-sm font-medium transition-all",
+                  manualMode ? "bg-white shadow-sm text-emerald-700" : "text-gray-500 hover:text-gray-700"
+                )}
+              >
+                手动粘贴字幕
+              </button>
+            </div>
+          </div>
+
           <form onSubmit={handleGenerate} className="relative group">
             <div className="flex flex-col gap-3 p-2 bg-white rounded-2xl shadow-sm border border-black/5 focus-within:border-emerald-500/50 transition-all duration-300">
-              <div className="flex flex-col gap-3">
-                <div className="px-4 pt-2">
-                  <textarea
-                    placeholder="在此粘贴视频的字幕内容..."
-                    className="w-full min-h-[150px] py-3 bg-transparent outline-none text-base resize-none"
-                    value={manualTranscript}
-                    onChange={(e) => setManualTranscript(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="flex justify-end p-2">
+              {!manualMode ? (
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="flex-1 flex items-center px-4 gap-3">
+                    <Youtube className="text-gray-400 w-5 h-5" />
+                    <input
+                      type="url"
+                      placeholder="粘贴 YouTube 视频链接 (例如: https://www.youtube.com/watch?v=...)"
+                      className="w-full py-3 bg-transparent outline-none text-base"
+                      value={url}
+                      onChange={(e) => setUrl(e.target.value)}
+                      required={!manualMode}
+                    />
+                  </div>
                   <button
                     type="submit"
                     disabled={loading}
@@ -149,12 +220,48 @@ ${transcript}`
                     ) : (
                       <>
                         <Wand2 className="w-4 h-4" />
-                        基于字幕生成
+                        生成文章
                       </>
                     )}
                   </button>
                 </div>
-              </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  <div className="px-4 pt-2">
+                    <textarea
+                      placeholder="在此粘贴视频的字幕内容..."
+                      className="w-full min-h-[150px] py-3 bg-transparent outline-none text-base resize-none"
+                      value={manualTranscript}
+                      onChange={(e) => setManualTranscript(e.target.value)}
+                      required={manualMode}
+                    />
+                  </div>
+                  <div className="flex justify-end p-2">
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className={cn(
+                        "px-8 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all duration-200",
+                        loading
+                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          : "bg-emerald-600 text-white hover:bg-emerald-700 active:scale-[0.98] shadow-lg shadow-emerald-500/20"
+                      )}
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          正在炼金...
+                        </>
+                      ) : (
+                        <>
+                          <Wand2 className="w-4 h-4" />
+                          基于字幕生成
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </form>
 
