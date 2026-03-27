@@ -1,6 +1,13 @@
 /**
  * Cloudflare Worker - YouTube Transcript API
+ * Uses YouTube's internal innerTube API (same as mobile app)
  */
+
+const INNER_TUBE_URL = 'https://www.youtube.com/youtubei/v1/player';
+const ANDROID_CLIENT = {
+  clientName: 'ANDROID',
+  clientVersion: '19.08.37',
+};
 
 export default {
   async fetch(request, env, ctx) {
@@ -59,58 +66,67 @@ function extractVideoId(url) {
 }
 
 async function fetchYouTubeTranscript(videoId) {
-  // YouTube's transcript/timedtext API endpoint
-  // Try different language codes, English first
-  const langs = ['en', 'zh-Hans', 'zh-CN', 'zh-TW', 'ja', 'ko'];
-  
-  for (const lang of langs) {
-    try {
-      const timedtextUrl = `https://www.youtube.com/api/timedtext?lang=${lang}&v=${videoId}&fmt=json3&xdrs=true`;
-      
-      const response = await fetch(timedtextUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept': 'application/json, text/plain, */*',
-          'Accept-Language': 'en-US,en;q=0.9',
+  // Use YouTube's innerTube API (same as Android app)
+  const response = await fetch(INNER_TUBE_URL + '?prettyPrint=false', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'User-Agent': 'com.google.android.youtube/19.08.37 (Linux; U; Android 10)',
+    },
+    body: JSON.stringify({
+      context: {
+        client: {
+          clientName: ANDROID_CLIENT.clientName,
+          clientVersion: ANDROID_CLIENT.clientVersion,
         },
-        cf: { cacheTtl: 300, cacheEverything: true }
-      });
+      },
+      videoId,
+    }),
+  });
 
-      if (response.ok) {
-        const contentType = response.headers.get('content-type') || '';
-        
-        if (contentType.includes('application/json') || contentType.includes('text/plain')) {
-          const text = await response.text();
-          
-          // Sometimes YouTube returns JSON with transcript data
-          try {
-            const data = JSON.parse(text);
-            if (data && data.events) {
-              const transcript = data.events
-                .filter(event => event.segs)
-                .flatMap(event => event.segs.map(seg => seg.text || ''))
-                .join(' ')
-                .replace(/\n/g, ' ')
-                .trim();
-              
-              if (transcript && transcript.length > 10) {
-                return transcript;
-              }
-            }
-          } catch {
-            // Not JSON, might be empty or plain text
-            if (text && text.trim().length > 20) {
-              return text.trim();
-            }
-          }
-        }
-      }
-    } catch (err) {
-      console.log(`Failed to fetch ${lang}:`, err.message);
+  if (!response.ok) {
+    throw new Error(`YouTube API returned ${response.status}`);
+  }
+
+  const data = await response.json();
+  const captionTracks = data?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
+
+  if (!captionTracks || captionTracks.length === 0) {
+    throw new Error('该视频没有字幕或字幕已被禁用。请尝试其他视频，或使用"手动模式"粘贴字幕。');
+  }
+
+  // Get the first available caption track
+  const captionTrack = captionTracks[0];
+  const baseUrl = captionTrack.baseUrl + '&fmt=json3';
+
+  // Fetch the actual caption content
+  const captionResponse = await fetch(baseUrl, {
+    headers: {
+      'User-Agent': 'com.google.android.youtube/19.08.37 (Linux; U; Android 10)',
+    },
+  });
+
+  if (!captionResponse.ok) {
+    throw new Error(`Failed to fetch caption content: ${captionResponse.status}`);
+  }
+
+  const captionData = await captionResponse.json();
+
+  // Parse the transcript from the JSON format
+  if (captionData && captionData.events) {
+    const transcript = captionData.events
+      .filter(event => event.segs)
+      .flatMap(event => event.segs.map(seg => seg.text || ''))
+      .join(' ')
+      .replace(/\n/g, ' ')
+      .trim();
+
+    if (transcript && transcript.length > 0) {
+      return transcript;
     }
   }
 
-  throw new Error('无法获取字幕：该视频可能没有字幕或字幕已被禁用。请尝试其他视频，或使用"手动模式"粘贴字幕。');
+  throw new Error('无法解析字幕内容。请尝试其他视频，或使用"手动模式"粘贴字幕。');
 }
 
 function jsonResponse(data, status = 200) {
