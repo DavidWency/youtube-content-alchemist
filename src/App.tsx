@@ -36,6 +36,7 @@ export default function App() {
 
     try {
       let transcript = '';
+      let detectedLang = manualMode ? 'cn' : 'en'; // Default, will be overridden in auto mode
 
       if (manualMode) {
         transcript = manualTranscript;
@@ -50,7 +51,8 @@ export default function App() {
           const data = await resp.json();
           if (data.transcript) {
             transcript = data.transcript;
-            setTranscriptLang(data.lang || 'en');
+            detectedLang = data.lang || 'en';
+            setTranscriptLang(detectedLang);
           } else {
             throw new Error(data.error || 'Worker returned no transcript');
           }
@@ -70,8 +72,8 @@ export default function App() {
       const apiKey = import.meta.env.VITE_MINIMAX_API_KEY as string;
       if (!apiKey) throw new Error('Missing MINIMAX API KEY. Please set VITE_MINIMAX_API_KEY in your environment.');
 
-      // Detect output language based on transcript language
-      const langCode = transcriptLang || 'en';
+      // Detect output language based on transcript language (use detectedLang directly)
+      const langCode = detectedLang;
       const langMap: Record<string, { name: string; articleLang: string }> = {
         en: { name: 'English', articleLang: 'English' },
         cn: { name: '简体中文', articleLang: '简体中文' },
