@@ -16,11 +16,9 @@ function cn(...inputs: ClassValue[]) {
 // Simple language detection from transcript text (no external deps)
 function detectLanguage(text: string): string {
   if (!text) return 'en';
-  // Count Chinese characters (CJK Unified Ideographs)
   const chineseChars = (text.match(/[\u4e00-\u9fff]/g) || []).length;
   const totalChars = (text.match(/[\u4e00-\u9fff]|[a-zA-Z]/g) || []).length;
   if (totalChars === 0) return 'en';
-  // If more than 20% Chinese characters, treat as Chinese
   return chineseChars / totalChars > 0.2 ? 'cn' : 'en';
 }
 
@@ -145,15 +143,15 @@ ${transcript}`
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-gray-100 font-sans selection:bg-purple-500/30">
+    <div className="min-h-screen bg-dark-bg text-gray-100 font-sans selection:bg-alchemist-purple/30">
       {/* Header */}
-      <header className="border-b border-white/10 bg-[#0a0a0f]/80 backdrop-blur-md sticky top-0 z-10">
+      <header className="border-b border-dark-border bg-dark-bg/80 backdrop-blur-md sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br from-amber-500 to-purple-600">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-alchemist-purple to-alchemist-gold shadow-[0_0_20px_rgba(139,92,246,0.4)]">
               <Wand2 className="text-white w-5 h-5" />
             </div>
-            <span className="font-semibold text-lg tracking-tight bg-gradient-to-r from-amber-400 to-purple-500 bg-clip-text text-transparent">
+            <span className="font-bold text-xl tracking-tight bg-gradient-to-r from-alchemist-gold to-alchemist-gold-light bg-clip-text text-transparent">
               YouTube Alchemist
             </span>
           </div>
@@ -161,50 +159,57 @@ ${transcript}`
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-12">
-        {/* Input Section */}
+        {/* Hero Section */}
         <section className="mb-12">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold tracking-tight mb-4 bg-gradient-to-r from-amber-400 via-purple-400 to-amber-400 bg-clip-text text-transparent">
-              将视频转化为深度文章
+          <div className="text-center mb-10">
+            <h1 className="text-5xl font-extrabold mb-4 tracking-tight bg-gradient-to-r from-alchemist-gold via-yellow-200 to-alchemist-gold bg-clip-text text-transparent">
+              Transmute Video into Content Gold
             </h1>
-            <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-              输入 YouTube 链接或直接粘贴字幕，AI 将为您生成一篇结构清晰的 Markdown 文章。
+            <p className="text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed">
+              Stop manual transcribing. Our AI Alchemist distills messy YouTube videos into polished, SEO-ready blog posts in seconds.
+            </p>
+            <p className="text-gray-500 text-sm mt-3">
+              Loved by indie hackers and content creators worldwide ✨
             </p>
           </div>
 
-          <div className="flex justify-center mb-6">
-            <div className="inline-flex p-1 bg-[#1a1a2e] rounded-xl border border-white/10">
+          <div className="flex justify-center mb-8">
+            <div className="inline-flex p-1 bg-dark-card rounded-xl border border-dark-border">
               <button
                 onClick={() => setManualMode(false)}
                 className={cn(
-                  "px-4 py-2 rounded-lg text-sm font-medium transition-all",
-                  !manualMode ? "bg-gradient-to-r from-amber-500 to-purple-600 text-white shadow-lg" : "text-gray-400 hover:text-gray-200"
+                  "px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                  !manualMode
+                    ? "bg-gradient-to-r from-alchemist-purple to-purple-500 text-white shadow-[0_0_15px_rgba(139,92,246,0.4)]"
+                    : "text-gray-400 hover:text-gray-200"
                 )}
               >
-                自动抓取
+                Auto Fetch
               </button>
               <button
                 onClick={() => setManualMode(true)}
                 className={cn(
-                  "px-4 py-2 rounded-lg text-sm font-medium transition-all",
-                  manualMode ? "bg-gradient-to-r from-amber-500 to-purple-600 text-white shadow-lg" : "text-gray-400 hover:text-gray-200"
+                  "px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                  manualMode
+                    ? "bg-gradient-to-r from-alchemist-purple to-purple-500 text-white shadow-[0_0_15px_rgba(139,92,246,0.4)]"
+                    : "text-gray-400 hover:text-gray-200"
                 )}
               >
-                手动粘贴字幕
+                Paste Transcript
               </button>
             </div>
           </div>
 
-          <form onSubmit={handleGenerate} className="relative group">
-            <div className="flex flex-col gap-3 p-2 bg-[#1a1a2e] rounded-2xl border border-white/10 focus-within:border-purple-500/50 transition-all duration-300">
+          <form onSubmit={handleGenerate} className="relative">
+            <div className="flex flex-col gap-3 p-2 bg-dark-card rounded-2xl border border-dark-border focus-within:border-alchemist-purple/50 transition-all duration-300 shadow-[0_0_30px_rgba(139,92,246,0.1)]">
               {!manualMode ? (
                 <div className="flex flex-col sm:flex-row gap-3">
                   <div className="flex-1 flex items-center px-4 gap-3">
-                    <Youtube className="text-gray-500 w-5 h-5" />
+                    <Youtube className="text-gray-500 w-5 h-5 shrink-0" />
                     <input
                       type="url"
-                      placeholder="粘贴 YouTube 视频链接 (例如: https://www.youtube.com/watch?v=...)"
-                      className="w-full py-3 bg-transparent outline-none text-base text-gray-100 placeholder:text-gray-500"
+                      placeholder="Paste your YouTube link here..."
+                      className="w-full py-4 bg-transparent outline-none text-base text-gray-100 placeholder:text-gray-500"
                       value={url}
                       onChange={(e) => setUrl(e.target.value)}
                       required={!manualMode}
@@ -214,21 +219,21 @@ ${transcript}`
                     type="submit"
                     disabled={loading}
                     className={cn(
-                      "px-8 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all duration-200",
+                      "px-8 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all duration-200",
                       loading
-                        ? "bg-[#2a2a3e] text-gray-500 cursor-not-allowed"
-                        : "bg-gradient-to-r from-amber-500 to-purple-600 text-white hover:from-amber-400 hover:to-purple-500 active:scale-[0.98] shadow-lg shadow-purple-500/20"
+                        ? "bg-dark-border text-gray-500 cursor-not-allowed"
+                        : "bg-gradient-to-r from-alchemist-purple to-purple-500 text-white hover:from-purple-500 hover:to-purple-400 active:scale-[0.98] shadow-[0_0_25px_rgba(139,92,246,0.5)]"
                     )}
                   >
                     {loading ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        正在炼金...
+                        Transmuting...
                       </>
                     ) : (
                       <>
                         <Wand2 className="w-4 h-4" />
-                        生成文章
+                        Transmute
                       </>
                     )}
                   </button>
@@ -237,8 +242,8 @@ ${transcript}`
                 <div className="flex flex-col gap-3">
                   <div className="px-4 pt-2">
                     <textarea
-                      placeholder="在此粘贴视频的字幕内容..."
-                      className="w-full min-h-[150px] py-3 bg-transparent outline-none text-base resize-none text-gray-100 placeholder:text-gray-500"
+                      placeholder="Paste your video transcript here..."
+                      className="w-full min-h-[160px] py-3 bg-transparent outline-none text-base resize-none text-gray-100 placeholder:text-gray-500"
                       value={manualTranscript}
                       onChange={(e) => setManualTranscript(e.target.value)}
                       required={manualMode}
@@ -249,21 +254,21 @@ ${transcript}`
                       type="submit"
                       disabled={loading}
                       className={cn(
-                        "px-8 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all duration-200",
+                        "px-8 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all duration-200",
                         loading
-                          ? "bg-[#2a2a3e] text-gray-500 cursor-not-allowed"
-                          : "bg-gradient-to-r from-amber-500 to-purple-600 text-white hover:from-amber-400 hover:to-purple-500 active:scale-[0.98] shadow-lg shadow-purple-500/20"
+                          ? "bg-dark-border text-gray-500 cursor-not-allowed"
+                          : "bg-gradient-to-r from-alchemist-purple to-purple-500 text-white hover:from-purple-500 hover:to-purple-400 active:scale-[0.98] shadow-[0_0_25px_rgba(139,92,246,0.5)]"
                       )}
                     >
                       {loading ? (
                         <>
                           <Loader2 className="w-4 h-4 animate-spin" />
-                          正在炼金...
+                          Transmuting...
                         </>
                       ) : (
                         <>
                           <Wand2 className="w-4 h-4" />
-                          基于字幕生成
+                          Transmute
                         </>
                       )}
                     </button>
@@ -274,30 +279,30 @@ ${transcript}`
           </form>
 
           {showCCGuide && (
-            <div className="mt-4 p-5 bg-[#1a1a2e] border border-amber-500/30 rounded-2xl animate-in fade-in slide-in-from-top-2">
+            <div className="mt-4 p-5 bg-dark-card border border-amber-500/30 rounded-2xl animate-in fade-in slide-in-from-top-2">
               <div className="flex items-start gap-3 mb-4">
                 <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-amber-500" />
                 <div>
-                  <p className="text-sm font-medium text-amber-400">无法找到字幕</p>
-                  <p className="text-xs text-gray-400 mt-1">请确认视频已在 YouTube 开启 CC 字幕（见下图）</p>
+                  <p className="text-sm font-medium text-amber-400">Transcript not found</p>
+                  <p className="text-xs text-gray-400 mt-1">Make sure the video has CC subtitles enabled (see image below)</p>
                 </div>
               </div>
-              <div className="bg-[#0a0a0f] rounded-xl p-3 border border-white/10">
-                <p className="text-xs text-gray-400 mb-2 font-medium">开启 CC 字幕步骤：</p>
+              <div className="bg-dark-bg rounded-xl p-3 border border-dark-border">
+                <p className="text-xs text-gray-400 mb-2 font-medium">How to enable CC:</p>
                 <img src="/assets/cc-icon.jpg" alt="CC icon location on YouTube" className="w-full max-w-md rounded-lg" />
-                <p className="text-xs text-gray-500 mt-2">点击视频右下角的 CC 图标即可开启/关闭字幕</p>
+                <p className="text-xs text-gray-500 mt-2">Click the CC icon at the bottom right of the video</p>
               </div>
               <button
                 onClick={() => setShowCCGuide(false)}
                 className="mt-3 text-xs text-amber-500 hover:text-amber-400 underline"
               >
-                关闭提示
+                Dismiss
               </button>
             </div>
           )}
 
           {error && !showCCGuide && (
-            <div className="mt-4 p-4 bg-[#1a1a2e] border border-red-500/30 rounded-xl flex items-start gap-3 text-red-400 animate-in fade-in slide-in-from-top-2">
+            <div className="mt-4 p-4 bg-dark-card border border-red-500/30 rounded-xl flex items-start gap-3 text-red-400 animate-in fade-in slide-in-from-top-2">
               <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
               <p className="text-sm font-medium">{error}</p>
             </div>
@@ -307,25 +312,25 @@ ${transcript}`
         {/* Result Section */}
         {summary && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="bg-[#1a1a2e] rounded-3xl border border-white/10 shadow-sm overflow-hidden">
-              <div className="px-8 py-6 border-b border-white/10 flex items-center justify-between bg-[#0a0a0f]/50">
+            <div className="bg-dark-card rounded-3xl border border-dark-border shadow-sm overflow-hidden">
+              <div className="px-8 py-6 border-b border-dark-border flex items-center justify-between bg-dark-bg/50">
                 <div className="flex items-center gap-2 text-gray-400">
                   <FileText className="w-4 h-4" />
-                  <span className="text-xs font-semibold uppercase tracking-wider">生成的文章 (Markdown)</span>
+                  <span className="text-xs font-semibold uppercase tracking-wider">Generated Article</span>
                 </div>
                 <button
                   onClick={copyToClipboard}
-                  className="p-2 hover:bg-white/10 rounded-lg transition-colors flex items-center gap-2 text-xs font-medium text-gray-400 hover:text-gray-200"
+                  className="p-2 hover:bg-white/5 rounded-lg transition-colors flex items-center gap-2 text-xs font-medium text-gray-400 hover:text-gray-200"
                 >
                   {copied ? (
                     <>
-                      <Check className="w-4 h-4 text-amber-500" />
-                      已复制
+                      <Check className="w-4 h-4 text-alchemist-gold" />
+                      Copied
                     </>
                   ) : (
                     <>
                       <Copy className="w-4 h-4" />
-                      复制全文
+                      Copy
                     </>
                   )}
                 </button>
@@ -342,17 +347,17 @@ ${transcript}`
         {/* Empty State */}
         {!summary && !loading && !error && (
           <div className="py-20 flex flex-col items-center justify-center text-gray-500">
-            <div className="w-20 h-20 border-2 border-dashed border-white/10 rounded-full flex items-center justify-center mb-4">
+            <div className="w-20 h-20 border-2 border-dashed border-dark-border rounded-full flex items-center justify-center mb-4">
               <FileText className="w-8 h-8" />
             </div>
-            <p className="text-sm font-medium">等待您的第一个视频链接</p>
+            <p className="text-sm font-medium">Paste a YouTube link to begin</p>
           </div>
         )}
       </main>
 
       {/* Footer */}
-      <footer className="py-12 border-t border-white/10 text-center text-gray-500 text-sm">
-        <p>© 2026 YouTube Content Alchemist. Built by an independent developer for creators.</p>
+      <footer className="py-12 border-t border-dark-border text-center text-gray-500 text-sm">
+        <p>© 2026 YouTube Content Alchemist · Built by an independent developer for creators</p>
       </footer>
     </div>
   );

@@ -1,1 +1,10 @@
 @import "tailwindcss";
+
+@theme {
+  --color-dark-bg: #09090B;
+  --color-dark-card: #18181B;
+  --color-dark-border: #27272A;
+  --color-alchemist-purple: #8B5CF6;
+  --color-alchemist-gold: #F59E0B;
+  --color-alchemist-gold-light: #FCD34D;
+}
