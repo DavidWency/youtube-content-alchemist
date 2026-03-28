@@ -14,8 +14,8 @@ function cn(...inputs: ClassValue[]) {
 }
 
 const EXAMPLE_VIDEOS = [
-  { title: 'A 5-min TED Talk on creativity', url: 'https://www.youtube.com/watch?v=7UGkIOGkbKU' },
-  { title: 'A viral explainer video', url: 'https://www.youtube.com/watch?v=sIcv1kF54Q4' },
+  { label: 'TED Talk', url: 'https://www.youtube.com/watch?v=ojttMNOW6zM' },
+  { label: 'MKBHD', url: 'https://www.youtube.com/watch?v=iGeXGdYE7UE' },
 ];
 
 // Simple language detection from transcript text (no external deps)
@@ -279,20 +279,22 @@ ${transcript}`
                       required={!manualMode}
                     />
                   </div>
-                  {/* Example prompt */}
-                  <div className="flex items-center justify-center gap-2 px-4 pb-1">
-                    <span className="text-zinc-500 text-sm">Not sure where to start?</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const example = EXAMPLE_VIDEOS[Math.floor(Math.random() * EXAMPLE_VIDEOS.length)];
-                        setUrl(example.url);
-                        setInputFlash(true);
-                      }}
-                      className="text-alchemist-purple hover:text-purple-400 font-medium transition-colors text-sm underline underline-offset-4 decoration-purple-500/30"
-                    >
-                      Try a featured video ⚗️
-                    </button>
+                  {/* Video type tags */}
+                  <div className="flex items-center justify-center gap-3 px-4 pb-1">
+                    <span className="text-zinc-500 text-sm">Try it:</span>
+                    {EXAMPLE_VIDEOS.map((video) => (
+                      <button
+                        key={video.title}
+                        type="button"
+                        onClick={() => {
+                          setUrl(video.url);
+                          setInputFlash(true);
+                        }}
+                        className="px-3 py-1 rounded-full text-xs font-medium border border-dark-border hover:border-alchemist-purple/50 hover:bg-alchemist-purple/10 text-gray-300 hover:text-alchemist-purple transition-all"
+                      >
+                        {video.label}
+                      </button>
+                    ))}
                   </div>
                   <button
                     type="submit"
