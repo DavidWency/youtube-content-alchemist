@@ -23,6 +23,7 @@ export default function App() {
   const [copied, setCopied] = useState(false);
   const [manualMode, setManualMode] = useState(false);
   const [manualTranscript, setManualTranscript] = useState('');
+  const [transcriptLang, setTranscriptLang] = useState<string | null>(null);
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,6 +33,7 @@ export default function App() {
     setError(null);
     setSummary(null);
     setShowCCGuide(false);
+    setTranscriptLang(manualMode ? 'cn' : null); // Manual mode defaults to Chinese
 
     try {
       let transcript = '';
@@ -62,6 +64,7 @@ export default function App() {
               const data = await resp.json();
               if (data.transcript) {
                 transcript = data.transcript;
+                setTranscriptLang(data.lang || 'en');
               } else {
                 throw new Error(data.error || 'Worker returned no transcript');
               }
@@ -89,7 +92,16 @@ export default function App() {
       // 2. Use Minimax to generate the article
       const apiKey = import.meta.env.VITE_MINIMAX_API_KEY as string;
       if (!apiKey) throw new Error('Missing MINIMAX API KEY. Please set VITE_MINIMAX_API_KEY in your environment.');
-      
+
+      // Detect output language based on transcript language
+      const langCode = transcriptLang || 'en';
+      const langMap: Record<string, { name: string; articleLang: string }> = {
+        en: { name: 'English', articleLang: 'English' },
+        cn: { name: '简体中文', articleLang: '简体中文' },
+        ok: { name: '한국어', articleLang: 'Korean' },
+      };
+      const lang = langMap[langCode] || langMap['en'];
+
       const response = await fetch('https://api.minimaxi.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -101,16 +113,16 @@ export default function App() {
           messages: [
             {
               role: "user",
-              content: `你是一位专业的内容写手。根据以下YouTube视频字幕，生成一篇高质量、结构化的中文Markdown文章。
+              content: `You are a professional content writer. Based on the following YouTube video transcript, generate a high-quality, well-structured article in ${lang.articleLang} Markdown format.
 
-要求：
-- 使用清晰的H2标题划分不同章节
-- 文章要有吸引力且信息丰富
-- 保持原视频的语气和风格，但提升可读性
-- 包含简介和总结
-- 语言：简体中文
+Requirements:
+- Use clear H2 headings to divide different sections
+- Make the article engaging and informative
+- Maintain the original video's tone and style, but improve readability
+- Include an introduction and summary
+- Output language: ${lang.articleLang}
 
-字幕内容：
+Transcript:
 ${transcript}`
             }
           ]

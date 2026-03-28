@@ -34,8 +34,8 @@ export default {
           return jsonResponse({ error: 'Invalid YouTube URL' }, 400);
         }
 
-        const transcript = await fetchTranscript(videoId);
-        return jsonResponse({ transcript });
+        const result = await fetchTranscript(videoId);
+        return jsonResponse({ transcript: result.text, lang: result.lang });
       } catch (err) {
         console.error('Transcript fetch error:', err);
         return jsonResponse({ error: err.message || 'Failed to fetch transcript' }, 500);
@@ -91,11 +91,14 @@ async function fetchTranscript(videoId) {
 
   // Otherwise parse the array format
   if (Array.isArray(data.transcript)) {
-    return data.transcript
+    const text = data.transcript
       .map(item => item.text)
       .join(' ')
       .replace(/\n/g, ' ')
       .trim();
+    // Get the language from the first segment
+    const lang = data.transcript[0]?.lang || 'en';
+    return { text, lang };
   }
 
   throw new Error('Invalid transcript format from RapidAPI');
