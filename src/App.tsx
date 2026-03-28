@@ -13,6 +13,17 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// Simple language detection from transcript text (no external deps)
+function detectLanguage(text: string): string {
+  if (!text) return 'en';
+  // Count Chinese characters (CJK Unified Ideographs)
+  const chineseChars = (text.match(/[\u4e00-\u9fff]/g) || []).length;
+  const totalChars = (text.match(/[\u4e00-\u9fff]|[a-zA-Z]/g) || []).length;
+  if (totalChars === 0) return 'en';
+  // If more than 20% Chinese characters, treat as Chinese
+  return chineseChars / totalChars > 0.2 ? 'cn' : 'en';
+}
+
 export default function App() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
@@ -41,6 +52,7 @@ export default function App() {
       if (manualMode) {
         transcript = manualTranscript;
         if (!transcript.trim()) throw new Error('请提供视频字幕内容');
+        detectedLang = detectLanguage(transcript);
       } else {
         // Fetch transcript via Worker (RapidAPI backend)
         const apiBase = import.meta.env.VITE_API_URL;
