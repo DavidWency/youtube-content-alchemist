@@ -8,3 +8,26 @@
   --color-alchemist-gold: #F59E0B;
   --color-alchemist-gold-light: #FCD34D;
 }
+
+/* Global styles */
+body {
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* Markdown H2 with purple tint */
+.markdown-body h2 {
+  color: #c4b5fd !important;
+  border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+  padding-bottom: 0.5rem;
+  margin-top: 2rem;
+}
+
+.markdown-body h3 {
+  color: #fcd34d !important;
+  margin-top: 1.5rem;
+}
+
+/* Smooth focus transitions */
+input:focus, textarea:focus {
+  transition: box-shadow 0.4s ease-out, border-color 0.3s ease;
+}

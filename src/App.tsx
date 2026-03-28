@@ -207,7 +207,7 @@ ${transcript}`
         {/* Hero Section */}
         <section className="mb-12">
           <div className="text-center mb-10">
-            <h1 className="text-5xl font-extrabold mb-4 tracking-tight bg-gradient-to-r from-alchemist-gold via-yellow-200 to-alchemist-gold bg-clip-text text-transparent">
+            <h1 className="text-5xl font-extrabold mb-4 tracking-tight bg-gradient-to-r from-amber-400 via-yellow-200 to-yellow-500 bg-clip-text text-transparent">
               Turn Video Noise into Content Gold
             </h1>
             <p className="text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed">
@@ -246,7 +246,7 @@ ${transcript}`
           </div>
 
           <form onSubmit={handleGenerate} className="relative">
-            <div className="flex flex-col gap-3 p-2 bg-dark-card rounded-2xl border border-dark-border focus-within:border-alchemist-purple/50 transition-all duration-300 shadow-[0_0_30px_rgba(139,92,246,0.1)]">
+            <div className="flex flex-col gap-3 p-2 bg-dark-card rounded-2xl border border-dark-border focus-within:border-alchemist-purple/50 transition-all duration-500 shadow-[0_0_30px_rgba(139,92,246,0.1)]">
               {!manualMode ? (
                 <div className="flex flex-col sm:flex-row gap-3">
                   <div className="flex-1 flex items-center px-4 gap-3">
@@ -254,7 +254,7 @@ ${transcript}`
                     <input
                       type="url"
                       placeholder="Paste your YouTube link here..."
-                      className="w-full py-4 bg-transparent outline-none text-base text-gray-100 placeholder:text-gray-500"
+                      className="w-full py-4 bg-transparent outline-none text-base text-gray-100 placeholder:text-gray-500 focus:shadow-[0_0_25px_rgba(139,92,246,0.4)] rounded-xl transition-all duration-300"
                       value={url}
                       onChange={(e) => setUrl(e.target.value)}
                       required={!manualMode}
@@ -288,7 +288,7 @@ ${transcript}`
                   <div className="px-4 pt-2">
                     <textarea
                       placeholder="Paste your video transcript here..."
-                      className="w-full min-h-[160px] py-3 bg-transparent outline-none text-base resize-none text-gray-100 placeholder:text-gray-500"
+                      className="w-full min-h-[160px] py-3 bg-transparent outline-none text-base resize-none text-gray-100 placeholder:text-gray-500 focus:shadow-[0_0_25px_rgba(139,92,246,0.4)] rounded-xl transition-all duration-300"
                       value={manualTranscript}
                       onChange={(e) => setManualTranscript(e.target.value)}
                       required={manualMode}
