@@ -1,13 +1,10 @@
 /**
  * Cloudflare Worker - YouTube Transcript API
- * Uses YouTube's internal innerTube API (same as mobile app)
+ * Uses RapidAPI YouTube Transcript API
  */
 
-const INNER_TUBE_URL = 'https://www.youtube.com/youtubei/v1/player';
-const ANDROID_CLIENT = {
-  clientName: 'ANDROID',
-  clientVersion: '19.08.37',
-};
+const RAPIDAPI_HOST = 'youtube-transcript3.p.rapidapi.com';
+const RAPIDAPI_KEY = 'aedaaef5c9msh519eaa27ded12cbp1e089fjsn5a719549ab88';
 
 export default {
   async fetch(request, env, ctx) {
@@ -37,7 +34,7 @@ export default {
           return jsonResponse({ error: 'Invalid YouTube URL' }, 400);
         }
 
-        const transcript = await fetchYouTubeTranscript(videoId);
+        const transcript = await fetchTranscript(videoId);
         return jsonResponse({ transcript });
       } catch (err) {
         console.error('Transcript fetch error:', err);
@@ -65,69 +62,43 @@ function extractVideoId(url) {
   return null;
 }
 
-async function fetchYouTubeTranscript(videoId) {
-  // Use YouTube's innerTube API (same as Android app)
-  const response = await fetch(INNER_TUBE_URL + '?prettyPrint=false', {
-    method: 'POST',
+async function fetchTranscript(videoId) {
+  const apiUrl = `https://${RAPIDAPI_HOST}/api/transcript?videoId=${encodeURIComponent(videoId)}&flat_text=true&lang=auto`;
+
+  const response = await fetch(apiUrl, {
+    method: 'GET',
     headers: {
-      'Content-Type': 'application/json',
-      'User-Agent': 'com.google.android.youtube/19.08.37 (Linux; U; Android 10)',
+      'X-RapidAPI-Host': RAPIDAPI_HOST,
+      'X-RapidAPI-Key': RAPIDAPI_KEY,
     },
-    body: JSON.stringify({
-      context: {
-        client: {
-          clientName: ANDROID_CLIENT.clientName,
-          clientVersion: ANDROID_CLIENT.clientVersion,
-        },
-      },
-      videoId,
-    }),
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`YouTube API returned ${response.status}: ${errorText}`);
+    throw new Error(`RapidAPI returned ${response.status}: ${errorText}`);
   }
 
   const data = await response.json();
-  const captionTracks = data?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
 
-  if (!captionTracks || captionTracks.length === 0) {
-    throw new Error('该视频没有字幕或字幕已被禁用。请尝试其他视频，或使用"手动模式"粘贴字幕。');
+  if (!data.success) {
+    throw new Error(data.error || 'Failed to fetch transcript from RapidAPI');
   }
 
-  // Get the first available caption track
-  const captionTrack = captionTracks[0];
-  const baseUrl = captionTrack.baseUrl + '&fmt=json3';
-
-  // Fetch the actual caption content
-  const captionResponse = await fetch(baseUrl, {
-    headers: {
-      'User-Agent': 'com.google.android.youtube/19.08.37 (Linux; U; Android 10)',
-    },
-  });
-
-  if (!captionResponse.ok) {
-    throw new Error(`Failed to fetch caption content: ${captionResponse.status}`);
+  // If flat_text was returned, use it directly
+  if (typeof data.transcript === 'string') {
+    return data.transcript;
   }
 
-  const captionData = await captionResponse.json();
-
-  // Parse the transcript from the JSON format
-  if (captionData && captionData.events) {
-    const transcript = captionData.events
-      .filter(event => event.segs)
-      .flatMap(event => event.segs.map(seg => seg.text || ''))
+  // Otherwise parse the array format
+  if (Array.isArray(data.transcript)) {
+    return data.transcript
+      .map(item => item.text)
       .join(' ')
       .replace(/\n/g, ' ')
       .trim();
-
-    if (transcript && transcript.length > 0) {
-      return transcript;
-    }
   }
 
-  throw new Error('无法解析字幕内容。请尝试其他视频，或使用"手动模式"粘贴字幕。');
+  throw new Error('Invalid transcript format from RapidAPI');
 }
 
 function jsonResponse(data, status = 200) {
