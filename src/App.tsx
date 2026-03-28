@@ -8,7 +8,6 @@ import ReactMarkdown from 'react-markdown';
 import { Youtube, Wand2, Loader2, FileText, AlertCircle, Copy, Check } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { YoutubeTranscript } from 'youtube-transcript';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -42,50 +41,28 @@ export default function App() {
         transcript = manualTranscript;
         if (!transcript.trim()) throw new Error('请提供视频字幕内容');
       } else {
-        // 1. Fetch transcript directly in browser using youtube-transcript
-        // Try with browser fetch first, then try CORS proxy as fallback
-        let fetchError = null;
-        
-        // Method 1: Direct fetch (may fail due to CORS)
+        // Fetch transcript via Worker (RapidAPI backend)
+        const apiBase = import.meta.env.VITE_API_URL;
+        if (!apiBase) throw new Error('Missing VITE_API_URL. Please configure your Worker URL.');
+
         try {
-          const transcriptData = await YoutubeTranscript.fetchTranscript(url);
-          transcript = transcriptData.map((item: { text: string }) => item.text).join(' ');
+          const resp = await fetch(`${apiBase}/api/transcript?url=${encodeURIComponent(url)}`);
+          const data = await resp.json();
+          if (data.transcript) {
+            transcript = data.transcript;
+            setTranscriptLang(data.lang || 'en');
+          } else {
+            throw new Error(data.error || 'Worker returned no transcript');
+          }
         } catch (err: any) {
-          console.error('Direct transcript fetch error:', err);
-          fetchError = err;
-        }
-        
-        // Method 2: Try via our Worker as CORS proxy
-        if (!transcript && fetchError) {
-          const apiBase = import.meta.env.VITE_API_URL;
-          if (apiBase) {
-            try {
-              const resp = await fetch(`${apiBase}/api/transcript?url=${encodeURIComponent(url)}`);
-              const data = await resp.json();
-              if (data.transcript) {
-                transcript = data.transcript;
-                setTranscriptLang(data.lang || 'en');
-              } else {
-                throw new Error(data.error || 'Worker returned no transcript');
-              }
-            } catch (workerErr: any) {
-              console.error('Worker transcript fetch error:', workerErr);
-              fetchError = workerErr;
-            }
-          }
-        }
-        
-        if (!transcript) {
-          if (fetchError?.message?.includes('captcha') || fetchError?.message?.includes('too many requests')) {
-            throw new Error('YouTube 触发了人机验证。请切换到"手动模式"并粘贴视频字幕。');
-          }
+          console.error('Worker transcript fetch error:', err);
           // Check if it's a "transcript not found" error
-          const errorMsg = fetchError?.message || '';
-          if (errorMsg.includes('transcript') || errorMsg.includes('字幕') || errorMsg.includes('not available') || errorMsg.includes('Failed to fetch')) {
+          const errorMsg = err?.message || '';
+          if (errorMsg.includes('transcript') || errorMsg.includes('字幕') || errorMsg.includes('not available') || errorMsg.includes('Failed to fetch') || errorMsg.includes('not found')) {
             setShowCCGuide(true);
             throw new Error('无法找到该视频的字幕。请确认视频已开启 CC 字幕（见下方提示）。');
           }
-          throw new Error(fetchError?.message || '无法获取字幕。请尝试其他视频，或使用"手动模式"粘贴字幕。');
+          throw err;
         }
       }
 
