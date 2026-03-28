@@ -34,6 +34,7 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [showCCGuide, setShowCCGuide] = useState(false);
   const [summary, setSummary] = useState<string | null>(null);
+  const [streamingText, setStreamingText] = useState<string>('');
   const [copied, setCopied] = useState(false);
   const [manualMode, setManualMode] = useState(false);
   const [manualTranscript, setManualTranscript] = useState('');
@@ -110,6 +111,7 @@ export default function App() {
         },
         body: JSON.stringify({
           model: "MiniMax-M2.7",
+          stream: true,
           messages: [
             {
               role: "user",
@@ -134,12 +136,39 @@ ${transcript}`
         throw new Error(`Minimax API error: ${response.status} - ${errorText}`);
       }
 
-      const data = await response.json();
-      let text = data.choices?.[0]?.message?.content;
-      if (!text) throw new Error('AI failed to generate content');
+      // Stream the response
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error('No response body');
 
-      text = text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+      const decoder = new TextDecoder();
+      let fullText = '';
 
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            if (data === '[DONE]') continue;
+            try {
+              const parsed = JSON.parse(data);
+              const delta = parsed.choices?.[0]?.delta?.content;
+              if (delta) {
+                fullText += delta;
+                setStreamingText(fullText);
+              }
+            } catch {}
+          }
+        }
+      }
+
+      // Remove thinking tags
+      const text = fullText.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+      setStreamingText('');
       setSummary(text);
     } catch (err: any) {
       console.error(err);
@@ -347,8 +376,8 @@ ${transcript}`
           )}
         </section>
 
-        {/* Result Section - Glassmorphism Card */}
-        {summary && (
+        {/* Result Section - Glassmorphism Card (shows streaming or final) */}
+        {(summary || streamingText) && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="rounded-3xl border border-white/10 bg-dark-card/60 backdrop-blur-md shadow-[0_0_40px_rgba(139,92,246,0.15)] overflow-hidden">
               <div className="px-8 py-6 border-b border-white/10 flex items-center justify-between bg-dark-bg/30">
@@ -375,7 +404,7 @@ ${transcript}`
               </div>
               <div className="p-8 md:p-12 prose prose-invert max-w-none">
                 <div className="markdown-body text-gray-300">
-                  <ReactMarkdown>{summary}</ReactMarkdown>
+                  <ReactMarkdown>{streamingText || summary}</ReactMarkdown>
                 </div>
               </div>
             </div>
@@ -383,7 +412,7 @@ ${transcript}`
         )}
 
         {/* Empty State */}
-        {!summary && !loading && !error && (
+        {!summary && !streamingText && !loading && !error && (
           <div className="py-20 flex flex-col items-center justify-center text-gray-500">
             <div className="w-20 h-20 border-2 border-dashed border-dark-border rounded-full flex items-center justify-center mb-4">
               <FileText className="w-8 h-8" />
