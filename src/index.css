@@ -7,6 +7,13 @@
   --color-alchemist-purple: #8B5CF6;
   --color-alchemist-gold: #F59E0B;
   --color-alchemist-gold-light: #FCD34D;
+  --animate-slide: slide 2s ease-in-out infinite;
+}
+
+@keyframes slide {
+  0% { width: 0%; transform: translateX(0); }
+  50% { width: 80%; transform: translateX(25%); }
+  100% { width: 100%; transform: translateX(100%); }
 }
 
 /* Global styles */

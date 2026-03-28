@@ -34,13 +34,6 @@ const LOADING_MESSAGES = [
 ];
 
 export default function App() {
-  // Auto-clear flash effect
-  React.useEffect(() => {
-    if (inputFlash) {
-      const t = setTimeout(() => setInputFlash(false), 600);
-      return () => clearTimeout(t);
-    }
-  }, [inputFlash]);
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -53,6 +46,14 @@ export default function App() {
   const [transcriptLang, setTranscriptLang] = useState<string | null>(null);
   const [loadingMessage, setLoadingMessage] = useState(LOADING_MESSAGES[0]);
   const [inputFlash, setInputFlash] = useState(false);
+
+  // Auto-clear flash effect (must be after inputFlash declaration)
+  React.useEffect(() => {
+    if (inputFlash) {
+      const t = setTimeout(() => setInputFlash(false), 600);
+      return () => clearTimeout(t);
+    }
+  }, [inputFlash]);
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -363,15 +364,8 @@ ${transcript}`
                 <div className="w-full max-w-md">
                   {/* Sliding gradient progress bar */}
                   <div className="h-1 bg-dark-border rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-alchemist-purple to-alchemist-gold rounded-full animate-[slide_2s_ease-in-out_infinite]" />
+                    <div className="h-full bg-gradient-to-r from-alchemist-purple to-alchemist-gold rounded-full animate-slide" />
                   </div>
-                  <style>{`
-                    @keyframes slide {
-                      0% { width: 0%; transform: translateX(0); }
-                      50% { width: 80%; transform: translateX(25%); }
-                      100% { width: 100%; transform: translateX(100%); }
-                    }
-                  `}</style>
                 </div>
                 <p className="text-sm text-gray-400 animate-pulse">{loadingMessage}</p>
               </div>
@@ -518,3 +512,5 @@ ${transcript}`
     </div>
   );
 }
+// UNIQUE_TEST_12345
+// XYZ123_UNIQUE_ABC456
