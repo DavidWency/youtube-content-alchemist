@@ -13,6 +13,11 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+const EXAMPLE_VIDEOS = [
+  { title: 'A 5-min TED Talk on creativity', url: 'https://www.youtube.com/watch?v=7UGkIOGkbKU' },
+  { title: 'A viral explainer video', url: 'https://www.youtube.com/watch?v=sIcv1kF54Q4' },
+];
+
 // Simple language detection from transcript text (no external deps)
 function detectLanguage(text: string): string {
   if (!text) return 'en';
@@ -29,6 +34,13 @@ const LOADING_MESSAGES = [
 ];
 
 export default function App() {
+  // Auto-clear flash effect
+  React.useEffect(() => {
+    if (inputFlash) {
+      const t = setTimeout(() => setInputFlash(false), 600);
+      return () => clearTimeout(t);
+    }
+  }, [inputFlash]);
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,6 +52,7 @@ export default function App() {
   const [manualTranscript, setManualTranscript] = useState('');
   const [transcriptLang, setTranscriptLang] = useState<string | null>(null);
   const [loadingMessage, setLoadingMessage] = useState(LOADING_MESSAGES[0]);
+  const [inputFlash, setInputFlash] = useState(false);
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -254,11 +267,31 @@ ${transcript}`
                     <input
                       type="url"
                       placeholder="Paste your YouTube link here..."
-                      className="w-full py-4 bg-transparent outline-none text-base text-gray-100 placeholder:text-gray-500 focus:shadow-[0_0_25px_rgba(139,92,246,0.4)] rounded-xl transition-all duration-300"
+                      className={cn(
+                        "w-full py-4 bg-transparent outline-none text-base text-gray-100 placeholder:text-gray-500 rounded-xl transition-all duration-300",
+                        inputFlash
+                          ? "shadow-[0_0_30px_rgba(139,92,246,0.7)] border-alchemist-purple/60"
+                          : "focus:shadow-[0_0_25px_rgba(139,92,246,0.4)]"
+                      )}
                       value={url}
                       onChange={(e) => setUrl(e.target.value)}
                       required={!manualMode}
                     />
+                  </div>
+                  {/* Example prompt */}
+                  <div className="flex items-center justify-center gap-2 px-4 pb-1">
+                    <span className="text-zinc-500 text-sm">Not sure where to start?</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const example = EXAMPLE_VIDEOS[Math.floor(Math.random() * EXAMPLE_VIDEOS.length)];
+                        setUrl(example.url);
+                        setInputFlash(true);
+                      }}
+                      className="text-alchemist-purple hover:text-purple-400 font-medium transition-colors text-sm underline underline-offset-4 decoration-purple-500/30"
+                    >
+                      Try a featured video ⚗️
+                    </button>
                   </div>
                   <button
                     type="submit"
