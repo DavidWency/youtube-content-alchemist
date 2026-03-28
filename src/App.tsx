@@ -422,9 +422,65 @@ ${transcript}`
         )}
       </main>
 
+      {/* Early Bird / Pro Waitlist */}
+      <section className="max-w-4xl mx-auto px-6 pb-12">
+        <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-dark-card to-dark-bg p-8 text-center">
+          <div className="flex justify-center mb-4">
+            {/* Product Hunt Coming Soon Badge */}
+            <a href="https://www.producthunt.com" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#1a1a2e] border border-[#fg5438]/20 hover:border-[#fg5438]/40 transition-colors">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              </span>
+              <span className="text-sm text-gray-300">Coming soon on</span>
+              <span className="text-sm font-bold text-[#fg5438]">Product Hunt</span>
+            </a>
+          </div>
+          <h3 className="text-xl font-bold text-gray-100 mb-2">Get Early Bird Discount</h3>
+          <p className="text-gray-400 text-sm mb-6 max-w-md mx-auto">
+            Pro version with unlimited transcriptions, custom tone styles, and API access. Leave your email for exclusive launch pricing.
+          </p>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const email = (e.currentTarget.elements.namedItem('email') as HTMLInputElement).value;
+              if (email) {
+                alert(`Thanks! We'll notify you at ${email}`);
+                (e.currentTarget as HTMLFormElement).reset();
+              }
+            }}
+            className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
+          >
+            <input
+              type="email"
+              name="email"
+              placeholder="your@email.com"
+              required
+              className="flex-1 px-4 py-3 rounded-xl bg-dark-bg border border-dark-border text-gray-100 placeholder:text-gray-500 focus:outline-none focus:border-alchemist-purple/50 transition-colors"
+            />
+            <button
+              type="submit"
+              className="px-6 py-3 rounded-xl font-bold bg-gradient-to-r from-alchemist-purple to-purple-500 text-white hover:from-purple-500 hover:to-purple-400 transition-all shadow-[0_0_20px_rgba(139,92,246,0.4)]"
+            >
+              Notify Me
+            </button>
+          </form>
+        </div>
+      </section>
+
       {/* Footer */}
-      <footer className="py-12 border-t border-dark-border text-center text-gray-500 text-sm">
-        <p>© 2026 YouTube Content Alchemist · Built by an independent developer for creators</p>
+      <footer className="py-8 border-t border-dark-border text-center text-gray-500 text-sm">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <p>© 2026 YouTube Content Alchemist · Built by an independent developer for creators</p>
+          <a
+            href="https://www.buymeacoffee.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-500 hover:text-amber-400 transition-colors"
+          >
+            ☕ Support the developer
+          </a>
+        </div>
       </footer>
     </div>
   );
