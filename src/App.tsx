@@ -22,6 +22,12 @@ function detectLanguage(text: string): string {
   return chineseChars / totalChars > 0.2 ? 'cn' : 'en';
 }
 
+const LOADING_MESSAGES = [
+  'Extracting essence from video...',
+  'Purifying transcripts...',
+  'Transmuting to content gold...',
+];
+
 export default function App() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
@@ -32,6 +38,7 @@ export default function App() {
   const [manualMode, setManualMode] = useState(false);
   const [manualTranscript, setManualTranscript] = useState('');
   const [transcriptLang, setTranscriptLang] = useState<string | null>(null);
+  const [loadingMessage, setLoadingMessage] = useState(LOADING_MESSAGES[0]);
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,6 +49,14 @@ export default function App() {
     setSummary(null);
     setShowCCGuide(false);
     setTranscriptLang(manualMode ? 'cn' : null);
+    setLoadingMessage(LOADING_MESSAGES[0]);
+
+    // Cycle loading messages
+    let msgIdx = 0;
+    const msgInterval = setInterval(() => {
+      msgIdx = (msgIdx + 1) % LOADING_MESSAGES.length;
+      setLoadingMessage(LOADING_MESSAGES[msgIdx]);
+    }, 2000);
 
     try {
       let transcript = '';
@@ -131,6 +146,7 @@ ${transcript}`
       setError(err.message || 'An unexpected error occurred');
     } finally {
       setLoading(false);
+      clearInterval(msgInterval);
     }
   };
 
@@ -163,10 +179,10 @@ ${transcript}`
         <section className="mb-12">
           <div className="text-center mb-10">
             <h1 className="text-5xl font-extrabold mb-4 tracking-tight bg-gradient-to-r from-alchemist-gold via-yellow-200 to-alchemist-gold bg-clip-text text-transparent">
-              Transmute Video into Content Gold
+              Turn Video Noise into Content Gold
             </h1>
             <p className="text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed">
-              Stop manual transcribing. Our AI Alchemist distills messy YouTube videos into polished, SEO-ready blog posts in seconds.
+              Stop wasting hours transcribing. YouTube Alchemist distills your favorite videos into professional, SEO-optimized articles in seconds.
             </p>
             <p className="text-gray-500 text-sm mt-3">
               Loved by indie hackers and content creators worldwide ✨
@@ -268,7 +284,7 @@ ${transcript}`
                       ) : (
                         <>
                           <Wand2 className="w-4 h-4" />
-                          Transmute
+                          Start Transmuting — It's Free
                         </>
                       )}
                     </button>
@@ -277,6 +293,28 @@ ${transcript}`
               )}
             </div>
           </form>
+
+          {/* Animated Loading Progress */}
+          {loading && (
+            <div className="mt-6 animate-in fade-in slide-in-from-top-2">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-full max-w-md">
+                  {/* Sliding gradient progress bar */}
+                  <div className="h-1 bg-dark-border rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-alchemist-purple to-alchemist-gold rounded-full animate-[slide_2s_ease-in-out_infinite]" />
+                  </div>
+                  <style>{`
+                    @keyframes slide {
+                      0% { width: 0%; transform: translateX(0); }
+                      50% { width: 80%; transform: translateX(25%); }
+                      100% { width: 100%; transform: translateX(100%); }
+                    }
+                  `}</style>
+                </div>
+                <p className="text-sm text-gray-400 animate-pulse">{loadingMessage}</p>
+              </div>
+            </div>
+          )}
 
           {showCCGuide && (
             <div className="mt-4 p-5 bg-dark-card border border-amber-500/30 rounded-2xl animate-in fade-in slide-in-from-top-2">
@@ -309,11 +347,11 @@ ${transcript}`
           )}
         </section>
 
-        {/* Result Section */}
+        {/* Result Section - Glassmorphism Card */}
         {summary && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="bg-dark-card rounded-3xl border border-dark-border shadow-sm overflow-hidden">
-              <div className="px-8 py-6 border-b border-dark-border flex items-center justify-between bg-dark-bg/50">
+            <div className="rounded-3xl border border-white/10 bg-dark-card/60 backdrop-blur-md shadow-[0_0_40px_rgba(139,92,246,0.15)] overflow-hidden">
+              <div className="px-8 py-6 border-b border-white/10 flex items-center justify-between bg-dark-bg/30">
                 <div className="flex items-center gap-2 text-gray-400">
                   <FileText className="w-4 h-4" />
                   <span className="text-xs font-semibold uppercase tracking-wider">Generated Article</span>
@@ -324,8 +362,8 @@ ${transcript}`
                 >
                   {copied ? (
                     <>
-                      <Check className="w-4 h-4 text-alchemist-gold" />
-                      Copied
+                      <Check className="w-4 h-4 text-green-400" />
+                      <span className="text-green-400">Copied!</span>
                     </>
                   ) : (
                     <>
