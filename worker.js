@@ -84,9 +84,9 @@ async function fetchTranscript(videoId) {
     throw new Error(data.error || 'Failed to fetch transcript from RapidAPI');
   }
 
-  // If flat_text was returned, use it directly
+  // If flat_text was returned, use it directly (no lang info available, default to en)
   if (typeof data.transcript === 'string') {
-    return data.transcript;
+    return { text: data.transcript, lang: 'en' };
   }
 
   // Otherwise parse the array format
