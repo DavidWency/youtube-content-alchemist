@@ -43,18 +43,17 @@ export default function App() {
     setError(null);
     setSummary(null);
     setShowCCGuide(false);
-    setTranscriptLang(manualMode ? 'cn' : null); // Manual mode defaults to Chinese
+    setTranscriptLang(manualMode ? 'cn' : null);
 
     try {
       let transcript = '';
-      let detectedLang = manualMode ? 'cn' : 'en'; // Default, will be overridden in auto mode
+      let detectedLang = manualMode ? 'cn' : 'en';
 
       if (manualMode) {
         transcript = manualTranscript;
         if (!transcript.trim()) throw new Error('请提供视频字幕内容');
         detectedLang = detectLanguage(transcript);
       } else {
-        // Fetch transcript via Worker (RapidAPI backend)
         const apiBase = import.meta.env.VITE_API_URL;
         if (!apiBase) throw new Error('Missing VITE_API_URL. Please configure your Worker URL.');
 
@@ -70,7 +69,6 @@ export default function App() {
           }
         } catch (err: any) {
           console.error('Worker transcript fetch error:', err);
-          // Check if it's a "transcript not found" error
           const errorMsg = err?.message || '';
           if (errorMsg.includes('transcript') || errorMsg.includes('字幕') || errorMsg.includes('not available') || errorMsg.includes('Failed to fetch') || errorMsg.includes('not found')) {
             setShowCCGuide(true);
@@ -80,11 +78,9 @@ export default function App() {
         }
       }
 
-      // 2. Use Minimax to generate the article
       const apiKey = import.meta.env.VITE_MINIMAX_API_KEY as string;
       if (!apiKey) throw new Error('Missing MINIMAX API KEY. Please set VITE_MINIMAX_API_KEY in your environment.');
 
-      // Detect output language based on transcript language (use detectedLang directly)
       const langCode = detectedLang;
       const langMap: Record<string, { name: string; articleLang: string }> = {
         en: { name: 'English', articleLang: 'English' },
@@ -129,7 +125,6 @@ ${transcript}`
       let text = data.choices?.[0]?.message?.content;
       if (!text) throw new Error('AI failed to generate content');
 
-      // Remove thinking tags and their content
       text = text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
 
       setSummary(text);
@@ -150,15 +145,17 @@ ${transcript}`
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa] text-[#1a1a1a] font-sans selection:bg-emerald-100">
+    <div className="min-h-screen bg-[#0a0a0f] text-gray-100 font-sans selection:bg-purple-500/30">
       {/* Header */}
-      <header className="border-b border-black/5 bg-white/80 backdrop-blur-md sticky top-0 z-10">
+      <header className="border-b border-white/10 bg-[#0a0a0f]/80 backdrop-blur-md sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
-              <Youtube className="text-white w-5 h-5" />
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br from-amber-500 to-purple-600">
+              <Wand2 className="text-white w-5 h-5" />
             </div>
-            <span className="font-semibold text-lg tracking-tight">YouTube Alchemist</span>
+            <span className="font-semibold text-lg tracking-tight bg-gradient-to-r from-amber-400 to-purple-500 bg-clip-text text-transparent">
+              YouTube Alchemist
+            </span>
           </div>
         </div>
       </header>
@@ -167,21 +164,21 @@ ${transcript}`
         {/* Input Section */}
         <section className="mb-12">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold tracking-tight mb-4">
+            <h1 className="text-4xl font-bold tracking-tight mb-4 bg-gradient-to-r from-amber-400 via-purple-400 to-amber-400 bg-clip-text text-transparent">
               将视频转化为深度文章
             </h1>
-            <p className="text-gray-500 text-lg max-w-2xl mx-auto">
-              输入 YouTube 链接或直接粘贴字幕,AI 将为您生成一篇结构清晰的 Markdown 文章。
+            <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+              输入 YouTube 链接或直接粘贴字幕，AI 将为您生成一篇结构清晰的 Markdown 文章。
             </p>
           </div>
 
           <div className="flex justify-center mb-6">
-            <div className="inline-flex p-1 bg-gray-100 rounded-xl">
+            <div className="inline-flex p-1 bg-[#1a1a2e] rounded-xl border border-white/10">
               <button
                 onClick={() => setManualMode(false)}
                 className={cn(
                   "px-4 py-2 rounded-lg text-sm font-medium transition-all",
-                  !manualMode ? "bg-white shadow-sm text-emerald-700" : "text-gray-500 hover:text-gray-700"
+                  !manualMode ? "bg-gradient-to-r from-amber-500 to-purple-600 text-white shadow-lg" : "text-gray-400 hover:text-gray-200"
                 )}
               >
                 自动抓取
@@ -190,7 +187,7 @@ ${transcript}`
                 onClick={() => setManualMode(true)}
                 className={cn(
                   "px-4 py-2 rounded-lg text-sm font-medium transition-all",
-                  manualMode ? "bg-white shadow-sm text-emerald-700" : "text-gray-500 hover:text-gray-700"
+                  manualMode ? "bg-gradient-to-r from-amber-500 to-purple-600 text-white shadow-lg" : "text-gray-400 hover:text-gray-200"
                 )}
               >
                 手动粘贴字幕
@@ -199,15 +196,15 @@ ${transcript}`
           </div>
 
           <form onSubmit={handleGenerate} className="relative group">
-            <div className="flex flex-col gap-3 p-2 bg-white rounded-2xl shadow-sm border border-black/5 focus-within:border-emerald-500/50 transition-all duration-300">
+            <div className="flex flex-col gap-3 p-2 bg-[#1a1a2e] rounded-2xl border border-white/10 focus-within:border-purple-500/50 transition-all duration-300">
               {!manualMode ? (
                 <div className="flex flex-col sm:flex-row gap-3">
                   <div className="flex-1 flex items-center px-4 gap-3">
-                    <Youtube className="text-gray-400 w-5 h-5" />
+                    <Youtube className="text-gray-500 w-5 h-5" />
                     <input
                       type="url"
                       placeholder="粘贴 YouTube 视频链接 (例如: https://www.youtube.com/watch?v=...)"
-                      className="w-full py-3 bg-transparent outline-none text-base"
+                      className="w-full py-3 bg-transparent outline-none text-base text-gray-100 placeholder:text-gray-500"
                       value={url}
                       onChange={(e) => setUrl(e.target.value)}
                       required={!manualMode}
@@ -219,8 +216,8 @@ ${transcript}`
                     className={cn(
                       "px-8 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all duration-200",
                       loading
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        : "bg-emerald-600 text-white hover:bg-emerald-700 active:scale-[0.98] shadow-lg shadow-emerald-500/20"
+                        ? "bg-[#2a2a3e] text-gray-500 cursor-not-allowed"
+                        : "bg-gradient-to-r from-amber-500 to-purple-600 text-white hover:from-amber-400 hover:to-purple-500 active:scale-[0.98] shadow-lg shadow-purple-500/20"
                     )}
                   >
                     {loading ? (
@@ -241,7 +238,7 @@ ${transcript}`
                   <div className="px-4 pt-2">
                     <textarea
                       placeholder="在此粘贴视频的字幕内容..."
-                      className="w-full min-h-[150px] py-3 bg-transparent outline-none text-base resize-none"
+                      className="w-full min-h-[150px] py-3 bg-transparent outline-none text-base resize-none text-gray-100 placeholder:text-gray-500"
                       value={manualTranscript}
                       onChange={(e) => setManualTranscript(e.target.value)}
                       required={manualMode}
@@ -254,8 +251,8 @@ ${transcript}`
                       className={cn(
                         "px-8 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all duration-200",
                         loading
-                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                          : "bg-emerald-600 text-white hover:bg-emerald-700 active:scale-[0.98] shadow-lg shadow-emerald-500/20"
+                          ? "bg-[#2a2a3e] text-gray-500 cursor-not-allowed"
+                          : "bg-gradient-to-r from-amber-500 to-purple-600 text-white hover:from-amber-400 hover:to-purple-500 active:scale-[0.98] shadow-lg shadow-purple-500/20"
                       )}
                     >
                       {loading ? (
@@ -277,22 +274,22 @@ ${transcript}`
           </form>
 
           {showCCGuide && (
-            <div className="mt-4 p-5 bg-amber-50 border border-amber-200 rounded-2xl animate-in fade-in slide-in-from-top-2">
+            <div className="mt-4 p-5 bg-[#1a1a2e] border border-amber-500/30 rounded-2xl animate-in fade-in slide-in-from-top-2">
               <div className="flex items-start gap-3 mb-4">
-                <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-amber-600" />
+                <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-amber-500" />
                 <div>
-                  <p className="text-sm font-medium text-amber-800">无法找到字幕</p>
-                  <p className="text-xs text-amber-600 mt-1">请确认视频已在 YouTube 开启 CC 字幕（见下图）</p>
+                  <p className="text-sm font-medium text-amber-400">无法找到字幕</p>
+                  <p className="text-xs text-gray-400 mt-1">请确认视频已在 YouTube 开启 CC 字幕（见下图）</p>
                 </div>
               </div>
-              <div className="bg-white rounded-xl p-3 border border-amber-100">
-                <p className="text-xs text-gray-500 mb-2 font-medium">开启 CC 字幕步骤：</p>
+              <div className="bg-[#0a0a0f] rounded-xl p-3 border border-white/10">
+                <p className="text-xs text-gray-400 mb-2 font-medium">开启 CC 字幕步骤：</p>
                 <img src="/assets/cc-icon.jpg" alt="CC icon location on YouTube" className="w-full max-w-md rounded-lg" />
-                <p className="text-xs text-gray-400 mt-2">点击视频右下角的 CC 图标即可开启/关闭字幕</p>
+                <p className="text-xs text-gray-500 mt-2">点击视频右下角的 CC 图标即可开启/关闭字幕</p>
               </div>
               <button
                 onClick={() => setShowCCGuide(false)}
-                className="mt-3 text-xs text-amber-600 hover:text-amber-800 underline"
+                className="mt-3 text-xs text-amber-500 hover:text-amber-400 underline"
               >
                 关闭提示
               </button>
@@ -300,7 +297,7 @@ ${transcript}`
           )}
 
           {error && !showCCGuide && (
-            <div className="mt-4 p-4 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3 text-red-700 animate-in fade-in slide-in-from-top-2">
+            <div className="mt-4 p-4 bg-[#1a1a2e] border border-red-500/30 rounded-xl flex items-start gap-3 text-red-400 animate-in fade-in slide-in-from-top-2">
               <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
               <p className="text-sm font-medium">{error}</p>
             </div>
@@ -310,19 +307,19 @@ ${transcript}`
         {/* Result Section */}
         {summary && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="bg-white rounded-3xl border border-black/5 shadow-sm overflow-hidden">
-              <div className="px-8 py-6 border-b border-black/5 flex items-center justify-between bg-gray-50/50">
-                <div className="flex items-center gap-2 text-gray-500">
+            <div className="bg-[#1a1a2e] rounded-3xl border border-white/10 shadow-sm overflow-hidden">
+              <div className="px-8 py-6 border-b border-white/10 flex items-center justify-between bg-[#0a0a0f]/50">
+                <div className="flex items-center gap-2 text-gray-400">
                   <FileText className="w-4 h-4" />
                   <span className="text-xs font-semibold uppercase tracking-wider">生成的文章 (Markdown)</span>
                 </div>
                 <button
                   onClick={copyToClipboard}
-                  className="p-2 hover:bg-white rounded-lg transition-colors flex items-center gap-2 text-xs font-medium text-gray-600"
+                  className="p-2 hover:bg-white/10 rounded-lg transition-colors flex items-center gap-2 text-xs font-medium text-gray-400 hover:text-gray-200"
                 >
                   {copied ? (
                     <>
-                      <Check className="w-4 h-4 text-emerald-600" />
+                      <Check className="w-4 h-4 text-amber-500" />
                       已复制
                     </>
                   ) : (
@@ -333,8 +330,8 @@ ${transcript}`
                   )}
                 </button>
               </div>
-              <div className="p-8 md:p-12 prose prose-slate max-w-none">
-                <div className="markdown-body">
+              <div className="p-8 md:p-12 prose prose-invert max-w-none">
+                <div className="markdown-body text-gray-300">
                   <ReactMarkdown>{summary}</ReactMarkdown>
                 </div>
               </div>
@@ -344,8 +341,8 @@ ${transcript}`
 
         {/* Empty State */}
         {!summary && !loading && !error && (
-          <div className="py-20 flex flex-col items-center justify-center text-gray-300">
-            <div className="w-20 h-20 border-2 border-dashed border-gray-200 rounded-full flex items-center justify-center mb-4">
+          <div className="py-20 flex flex-col items-center justify-center text-gray-500">
+            <div className="w-20 h-20 border-2 border-dashed border-white/10 rounded-full flex items-center justify-center mb-4">
               <FileText className="w-8 h-8" />
             </div>
             <p className="text-sm font-medium">等待您的第一个视频链接</p>
@@ -354,8 +351,8 @@ ${transcript}`
       </main>
 
       {/* Footer */}
-      <footer className="py-12 border-t border-black/5 text-center text-gray-400 text-sm">
-        <p>© 2026 YouTube Content Alchemist. Powered by Gemini 3.1 Pro.</p>
+      <footer className="py-12 border-t border-white/10 text-center text-gray-500 text-sm">
+        <p>© 2026 YouTube Content Alchemist. Built by an independent developer for creators.</p>
       </footer>
     </div>
   );
