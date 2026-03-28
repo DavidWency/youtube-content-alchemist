@@ -18,6 +18,7 @@ export default function App() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showCCGuide, setShowCCGuide] = useState(false);
   const [summary, setSummary] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [manualMode, setManualMode] = useState(false);
@@ -30,6 +31,7 @@ export default function App() {
     setLoading(true);
     setError(null);
     setSummary(null);
+    setShowCCGuide(false);
 
     try {
       let transcript = '';
@@ -73,6 +75,12 @@ export default function App() {
         if (!transcript) {
           if (fetchError?.message?.includes('captcha') || fetchError?.message?.includes('too many requests')) {
             throw new Error('YouTube 触发了人机验证。请切换到"手动模式"并粘贴视频字幕。');
+          }
+          // Check if it's a "transcript not found" error
+          const errorMsg = fetchError?.message || '';
+          if (errorMsg.includes('transcript') || errorMsg.includes('字幕') || errorMsg.includes('not available') || errorMsg.includes('Failed to fetch')) {
+            setShowCCGuide(true);
+            throw new Error('无法找到该视频的字幕。请确认视频已开启 CC 字幕（见下方提示）。');
           }
           throw new Error(fetchError?.message || '无法获取字幕。请尝试其他视频，或使用"手动模式"粘贴字幕。');
         }
@@ -265,7 +273,30 @@ ${transcript}`
             </div>
           </form>
 
-          {error && (
+          {showCCGuide && (
+            <div className="mt-4 p-5 bg-amber-50 border border-amber-200 rounded-2xl animate-in fade-in slide-in-from-top-2">
+              <div className="flex items-start gap-3 mb-4">
+                <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-amber-600" />
+                <div>
+                  <p className="text-sm font-medium text-amber-800">无法找到字幕</p>
+                  <p className="text-xs text-amber-600 mt-1">请确认视频已在 YouTube 开启 CC 字幕（见下图）</p>
+                </div>
+              </div>
+              <div className="bg-white rounded-xl p-3 border border-amber-100">
+                <p className="text-xs text-gray-500 mb-2 font-medium">开启 CC 字幕步骤：</p>
+                <img src="/assets/cc-icon.jpg" alt="CC icon location on YouTube" className="w-full max-w-md rounded-lg" />
+                <p className="text-xs text-gray-400 mt-2">点击视频右下角的 CC 图标即可开启/关闭字幕</p>
+              </div>
+              <button
+                onClick={() => setShowCCGuide(false)}
+                className="mt-3 text-xs text-amber-600 hover:text-amber-800 underline"
+              >
+                关闭提示
+              </button>
+            </div>
+          )}
+
+          {error && !showCCGuide && (
             <div className="mt-4 p-4 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3 text-red-700 animate-in fade-in slide-in-from-top-2">
               <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
               <p className="text-sm font-medium">{error}</p>
