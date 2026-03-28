@@ -5,6 +5,7 @@
 
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Youtube, Wand2, Loader2, FileText, AlertCircle, Copy, Check } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -433,7 +434,7 @@ ${transcript}`
               </div>
               <div className="p-8 md:p-12 prose prose-invert max-w-none">
                 <div className="markdown-body text-gray-300">
-                  <ReactMarkdown>{streamingText || summary}</ReactMarkdown>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{streamingText || summary}</ReactMarkdown>
                 </div>
               </div>
             </div>
