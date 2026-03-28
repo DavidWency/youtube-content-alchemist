@@ -63,7 +63,7 @@ function extractVideoId(url) {
 }
 
 async function fetchTranscript(videoId) {
-  const apiUrl = `https://${RAPIDAPI_HOST}/api/transcript?videoId=${encodeURIComponent(videoId)}&flat_text=true&lang=auto`;
+  const apiUrl = `https://${RAPIDAPI_HOST}/api/transcript?videoId=${encodeURIComponent(videoId)}&flat_text=true`;
 
   const response = await fetch(apiUrl, {
     method: 'GET',
