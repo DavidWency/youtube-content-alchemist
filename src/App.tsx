@@ -592,8 +592,10 @@ ${transcript}`
                 if (data.success) {
                   alert(`Thanks! We'll notify you at ${email}`);
                   (e.currentTarget as HTMLFormElement).reset();
+                } else if (resp.status === 409) {
+                  alert('This email is already on our waitlist!');
                 } else {
-                  alert(data.error || 'Subscription failed. Please try again.');
+                  alert(data.message || 'Subscription failed. Please try again.');
                 }
               } catch {
                 alert('Network error. Please try again.');
