@@ -47,6 +47,13 @@ export default function App() {
   const [transcriptLang, setTranscriptLang] = useState<string | null>(null);
   const [loadingMessage, setLoadingMessage] = useState(LOADING_MESSAGES[0]);
   const [inputFlash, setInputFlash] = useState(false);
+  const [tone, setTone] = useState<'professional' | 'conversational' | 'academic'>('conversational');
+
+  const TONE_OPTIONS = [
+    { value: 'professional', label: 'Professional', desc: 'Authoritative & data-driven' },
+    { value: 'conversational', label: 'Conversational', desc: 'Friendly & coffee-shop chat' },
+    { value: 'academic', label: 'Academic', desc: 'Rigorous & objective' },
+  ] as const;
 
   // Auto-clear flash effect (must be after inputFlash declaration)
   React.useEffect(() => {
@@ -155,6 +162,9 @@ Professional yet conversational, authoritative, and helpful. (Adjust based on th
 
 # Output Language:
 English (Standard US).
+
+# Tone:
+${tone === 'professional' ? 'Tone: Authoritative, formal, and data-driven.' : tone === 'conversational' ? 'Tone: Friendly, casual, and like a coffee-shop chat.' : 'Tone: Rigorous, structured, and objective.'}
 
 Transcript:
 ${transcript}`
@@ -274,6 +284,31 @@ ${transcript}`
               >
                 Paste Transcript
               </button>
+            </div>
+          </div>
+
+          {/* Tone Selector */}
+          <div className="flex justify-center mb-6">
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-gray-500 uppercase tracking-wider font-medium">Tone:</span>
+              <div className="inline-flex p-1 bg-dark-card rounded-lg border border-dark-border">
+                {TONE_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setTone(opt.value)}
+                    title={opt.desc}
+                    className={cn(
+                      "px-4 py-2 rounded-md text-sm font-medium transition-all duration-200",
+                      tone === opt.value
+                        ? "bg-alchemist-purple/20 text-alchemist-purple border border-alchemist-purple/40"
+                        : "text-gray-400 hover:text-gray-200 border border-transparent"
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
