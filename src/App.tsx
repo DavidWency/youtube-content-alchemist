@@ -28,6 +28,23 @@ function detectLanguage(text: string): string {
   return chineseChars / totalChars > 0.2 ? 'cn' : 'en';
 }
 
+// Extract YouTube video ID from URL
+function extractVideoIdFromUrl(url: string): string | null {
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes('youtube.com')) {
+      return u.searchParams.get('v');
+    }
+    if (u.hostname === 'youtu.be') {
+      return u.pathname.slice(1);
+    }
+    if (u.pathname.startsWith('/embed/')) {
+      return u.pathname.split('/')[2];
+    }
+  } catch {}
+  return null;
+}
+
 const LOADING_MESSAGES = [
   'Extracting essence from video...',
   'Purifying transcripts...',
@@ -49,6 +66,7 @@ export default function App() {
   const [inputFlash, setInputFlash] = useState(false);
   const [tone, setTone] = useState<'professional' | 'conversational' | 'academic'>('professional');
   const [toneTooltip, setToneTooltip] = useState<string | null>(null);
+  const [videoId, setVideoId] = useState<string | null>(null);
 
   const TONE_OPTIONS = [
     { value: 'professional', label: 'Professional', desc: 'Authoritative, formal, and data-driven.' },
@@ -74,6 +92,15 @@ export default function App() {
     setShowCCGuide(false);
     setTranscriptLang(manualMode ? 'cn' : null);
     setLoadingMessage(LOADING_MESSAGES[0]);
+    setStreamingText('');
+
+    // Extract videoId from URL for thumbnail
+    if (!manualMode && url) {
+      const id = extractVideoIdFromUrl(url);
+      setVideoId(id);
+    } else {
+      setVideoId(null);
+    }
 
     // Cycle loading messages
     let msgIdx = 0;
@@ -468,6 +495,20 @@ ${transcript}`
         {/* Result Section - Glassmorphism Card (shows streaming or final) */}
         {(summary || streamingText) && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* Video Thumbnail */}
+            {videoId && (
+              <div className="w-full mb-6 overflow-hidden rounded-2xl border border-dark-border">
+                <img
+                  src={`https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`}
+                  alt="Video Thumbnail"
+                  className="w-full h-auto object-cover"
+                  onError={(e) => {
+                    // Fallback to hqdefault if maxresdefault doesn't exist
+                    (e.target as HTMLImageElement).src = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+                  }}
+                />
+              </div>
+            )}
             <div className="rounded-3xl border border-white/10 bg-dark-card/60 backdrop-blur-md shadow-[0_0_40px_rgba(139,92,246,0.15)] overflow-hidden">
               <div className="px-8 py-6 border-b border-white/10 flex items-center justify-between bg-dark-bg/30">
                 <div className="flex items-center gap-2 text-gray-400">
