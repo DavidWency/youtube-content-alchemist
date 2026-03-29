@@ -21,17 +21,67 @@ body {
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
-/* Markdown H2 with purple tint */
+/* Markdown body - body text in zinc-400 for contrast */
+.markdown-body {
+  color: #a1a1aa;
+}
+
 .markdown-body h2 {
-  color: #c4b5fd !important;
-  border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+  color: #ffffff !important;
+  font-weight: 700;
+  border-bottom: 1px solid rgba(139, 92, 246, 0.3);
   padding-bottom: 0.5rem;
   margin-top: 2rem;
 }
 
 .markdown-body h3 {
-  color: #fcd34d !important;
+  color: #ffffff !important;
+  font-weight: 600;
   margin-top: 1.5rem;
+}
+
+/* Blockquotes - gold left border + purple background */
+.markdown-body blockquote {
+  border-left: 4px solid #F59E0B;
+  background: rgba(139, 92, 246, 0.1);
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+  border-radius: 0 8px 8px 0;
+  color: #d4d4d8;
+}
+
+.markdown-body blockquote p {
+  margin: 0;
+}
+
+/* Code blocks - dark gray background */
+.markdown-body code {
+  background: #27272A;
+  color: #e4e4e7;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.875em;
+}
+
+.markdown-body pre {
+  background: #1a1a1a;
+  border: 1px solid #27272A;
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+
+.markdown-body pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* Paragraphs - slightly lighter zinc */
+.markdown-body p {
+  color: #a1a1aa;
+  line-height: 1.75;
 }
 
 /* Smooth focus transitions */
