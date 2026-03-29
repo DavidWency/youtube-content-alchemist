@@ -47,12 +47,13 @@ export default function App() {
   const [transcriptLang, setTranscriptLang] = useState<string | null>(null);
   const [loadingMessage, setLoadingMessage] = useState(LOADING_MESSAGES[0]);
   const [inputFlash, setInputFlash] = useState(false);
-  const [tone, setTone] = useState<'professional' | 'conversational' | 'academic'>('conversational');
+  const [tone, setTone] = useState<'professional' | 'conversational' | 'academic'>('professional');
+  const [toneTooltip, setToneTooltip] = useState<string | null>(null);
 
   const TONE_OPTIONS = [
-    { value: 'professional', label: 'Professional', desc: 'Authoritative & data-driven' },
-    { value: 'conversational', label: 'Conversational', desc: 'Friendly & coffee-shop chat' },
-    { value: 'academic', label: 'Academic', desc: 'Rigorous & objective' },
+    { value: 'professional', label: 'Professional', desc: 'Tone: Authoritative, formal, and data-driven.' },
+    { value: 'conversational', label: 'Conversational', desc: 'Tone: Friendly, casual, and like a coffee-shop chat.' },
+    { value: 'academic', label: 'Academic', desc: 'Tone: Rigorous, structured, and objective.' },
   ] as const;
 
   // Auto-clear flash effect (must be after inputFlash declaration)
@@ -291,13 +292,14 @@ ${transcript}`
           <div className="flex justify-center mb-6">
             <div className="flex items-center gap-3">
               <span className="text-xs text-gray-500 uppercase tracking-wider font-medium">Tone:</span>
-              <div className="inline-flex p-1 bg-dark-card rounded-lg border border-dark-border">
+              <div className="inline-flex p-1 bg-dark-card rounded-lg border border-dark-border relative">
                 {TONE_OPTIONS.map((opt) => (
                   <button
                     key={opt.value}
                     type="button"
                     onClick={() => setTone(opt.value)}
-                    title={opt.desc}
+                    onMouseEnter={() => setToneTooltip(opt.desc)}
+                    onMouseLeave={() => setToneTooltip(null)}
                     className={cn(
                       "px-4 py-2 rounded-md text-sm font-medium transition-all duration-200",
                       tone === opt.value
@@ -308,6 +310,11 @@ ${transcript}`
                     {opt.label}
                   </button>
                 ))}
+                {toneTooltip && (
+                  <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-dark-card border border-dark-border rounded-lg shadow-lg whitespace-nowrap z-20">
+                    <p className="text-xs text-gray-300">{toneTooltip}</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
