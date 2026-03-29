@@ -53,14 +53,20 @@ export default {
           return jsonResponse({ error: 'Missing email' }, 400);
         }
 
-        const loopsResp = await fetch(`https://app.loops.so/api/newsletter-form/${LOOPS_FORM_ID}/subscribe`, {
+        const loopsResp = await fetch(`https://app.loops.so/api/newsletter-form/${LOOPS_FORM_ID}`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email }),
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: `email=${encodeURIComponent(email)}`,
         });
 
-        const loopsData = await loopsResp.json();
-        return jsonResponse(loopsData, loopsResp.status);
+        const text = await loopsResp.text();
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = { success: loopsResp.ok, message: text };
+        }
+        return jsonResponse(data, loopsResp.status);
       } catch (err) {
         console.error('Subscribe error:', err);
         return jsonResponse({ error: 'Subscription failed' }, 500);
