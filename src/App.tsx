@@ -571,7 +571,7 @@ ${transcript}`
             Pro version with unlimited transcriptions, custom tone styles, and API access. Leave your email for exclusive launch pricing.
           </p>
           <form
-            onSubmit={async (e) => {
+            onSubmit={(e) => {
               e.preventDefault();
               const email = (e.currentTarget.elements.namedItem('email') as HTMLInputElement).value;
               if (!email) return;
@@ -582,30 +582,37 @@ ${transcript}`
                 return;
               }
 
-              const btn = e.currentTarget.querySelector('button[type="submit"]') as HTMLButtonElement;
-              if (btn.disabled) return; // Prevent double submit
-              btn.disabled = true;
+              // Use a flag to prevent double submit
+              const form = e.currentTarget;
+              if ((form as any)._submitting) return;
+              (form as any)._submitting = true;
 
-              try {
-                const resp = await fetch(`${apiBase}/api/subscribe`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ email }),
+              fetch(`${apiBase}/api/subscribe`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+              })
+                .then(resp => {
+                  if (resp.status === 409) {
+                    alert('This email is already on our waitlist!');
+                    return { success: false };
+                  }
+                  return resp.json();
+                })
+                .then(data => {
+                  if (data.success) {
+                    alert(`Thanks! We'll notify you at ${email}`);
+                    form.reset();
+                  } else if (data.message && data.message !== 'This email is already on our waitlist!') {
+                    alert(data.message || 'Subscription failed. Please try again.');
+                  }
+                })
+                .catch(() => {
+                  alert('Network error. Please try again.');
+                })
+                .finally(() => {
+                  (form as any)._submitting = false;
                 });
-                const data = await resp.json();
-                if (data.success) {
-                  alert(`Thanks! We'll notify you at ${email}`);
-                  (e.currentTarget as HTMLFormElement).reset();
-                } else if (resp.status === 409) {
-                  alert('This email is already on our waitlist!');
-                } else {
-                  alert(data.message || 'Subscription failed. Please try again.');
-                }
-              } catch {
-                alert('Network error. Please try again.');
-              } finally {
-                btn.disabled = false;
-              }
             }}
             className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
           >
