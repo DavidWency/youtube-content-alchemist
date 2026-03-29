@@ -51,9 +51,9 @@ export default function App() {
   const [toneTooltip, setToneTooltip] = useState<string | null>(null);
 
   const TONE_OPTIONS = [
-    { value: 'professional', label: 'Professional', desc: 'Tone: Authoritative, formal, and data-driven.' },
-    { value: 'conversational', label: 'Conversational', desc: 'Tone: Friendly, casual, and like a coffee-shop chat.' },
-    { value: 'academic', label: 'Academic', desc: 'Tone: Rigorous, structured, and objective.' },
+    { value: 'professional', label: 'Professional', desc: 'Authoritative, formal, and data-driven.' },
+    { value: 'conversational', label: 'Conversational', desc: 'Friendly, casual, and like a coffee-shop chat.' },
+    { value: 'academic', label: 'Academic', desc: 'Rigorous, structured, and objective.' },
   ] as const;
 
   // Auto-clear flash effect (must be after inputFlash declaration)
