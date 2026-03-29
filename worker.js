@@ -5,7 +5,7 @@
 
 const RAPIDAPI_HOST = 'youtube-transcript3.p.rapidapi.com';
 const RAPIDAPI_KEY = 'aedaaef5c9msh519eaa27ded12cbp1e089fjsn5a719549ab88';
-const LOOPS_FORM_ID = 'cmnbje6nk04me0i1uqmx40mzm';
+const LOOPS_API_KEY = '182bcd9e8a61a198cfa49c94b0947732';
 
 export default {
   async fetch(request, env, ctx) {
@@ -53,19 +53,20 @@ export default {
           return jsonResponse({ error: 'Missing email' }, 400);
         }
 
-        const loopsResp = await fetch(`https://app.loops.so/api/newsletter-form/${LOOPS_FORM_ID}`, {
+        const loopsResp = await fetch('https://app.loops.so/api/v1/contacts/create', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: `email=${encodeURIComponent(email)}`,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${LOOPS_API_KEY}`,
+          },
+          body: JSON.stringify({
+            email,
+            source: 'Youtube Alchemist Waitlist',
+            userGroup: 'Waitlist',
+          }),
         });
 
-        const text = await loopsResp.text();
-        let data;
-        try {
-          data = JSON.parse(text);
-        } catch {
-          data = { success: loopsResp.ok, message: text };
-        }
+        const data = await loopsResp.json();
         return jsonResponse(data, loopsResp.status);
       } catch (err) {
         console.error('Subscribe error:', err);
