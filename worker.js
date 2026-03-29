@@ -5,6 +5,7 @@
 
 const RAPIDAPI_HOST = 'youtube-transcript3.p.rapidapi.com';
 const RAPIDAPI_KEY = 'aedaaef5c9msh519eaa27ded12cbp1e089fjsn5a719549ab88';
+const LOOPS_FORM_ID = 'cmnbje6nk04me0i1uqmx40mzm';
 
 export default {
   async fetch(request, env, ctx) {
@@ -15,7 +16,7 @@ export default {
       return new Response(null, {
         headers: {
           'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, OPTIONS',
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
           'Access-Control-Allow-Headers': 'Content-Type',
         },
       });
@@ -39,6 +40,30 @@ export default {
       } catch (err) {
         console.error('Transcript fetch error:', err);
         return jsonResponse({ error: err.message || 'Failed to fetch transcript' }, 500);
+      }
+    }
+
+    // Loops newsletter subscription proxy
+    if (url.pathname === '/api/subscribe' && request.method === 'POST') {
+      try {
+        const body = await request.json();
+        const { email } = body;
+
+        if (!email) {
+          return jsonResponse({ error: 'Missing email' }, 400);
+        }
+
+        const loopsResp = await fetch(`https://app.loops.so/api/newsletter-form/${LOOPS_FORM_ID}/subscribe`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+
+        const loopsData = await loopsResp.json();
+        return jsonResponse(loopsData, loopsResp.status);
+      } catch (err) {
+        console.error('Subscribe error:', err);
+        return jsonResponse({ error: 'Subscription failed' }, 500);
       }
     }
 

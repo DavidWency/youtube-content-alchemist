@@ -571,12 +571,32 @@ ${transcript}`
             Pro version with unlimited transcriptions, custom tone styles, and API access. Leave your email for exclusive launch pricing.
           </p>
           <form
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
               const email = (e.currentTarget.elements.namedItem('email') as HTMLInputElement).value;
-              if (email) {
-                alert(`Thanks! We'll notify you at ${email}`);
-                (e.currentTarget as HTMLFormElement).reset();
+              if (!email) return;
+
+              const apiBase = import.meta.env.VITE_API_URL;
+              if (!apiBase) {
+                alert('Missing API configuration');
+                return;
+              }
+
+              try {
+                const resp = await fetch(`${apiBase}/api/subscribe`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ email }),
+                });
+                const data = await resp.json();
+                if (data.success) {
+                  alert(`Thanks! We'll notify you at ${email}`);
+                  (e.currentTarget as HTMLFormElement).reset();
+                } else {
+                  alert(data.error || 'Subscription failed. Please try again.');
+                }
+              } catch {
+                alert('Network error. Please try again.');
               }
             }}
             className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
