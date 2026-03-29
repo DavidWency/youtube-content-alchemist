@@ -582,6 +582,10 @@ ${transcript}`
                 return;
               }
 
+              const btn = e.currentTarget.querySelector('button[type="submit"]') as HTMLButtonElement;
+              if (btn.disabled) return; // Prevent double submit
+              btn.disabled = true;
+
               try {
                 const resp = await fetch(`${apiBase}/api/subscribe`, {
                   method: 'POST',
@@ -599,6 +603,8 @@ ${transcript}`
                 }
               } catch {
                 alert('Network error. Please try again.');
+              } finally {
+                btn.disabled = false;
               }
             }}
             className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
@@ -612,7 +618,7 @@ ${transcript}`
             />
             <button
               type="submit"
-              className="px-6 py-3 rounded-xl font-bold bg-gradient-to-r from-alchemist-purple to-purple-500 text-white hover:from-purple-500 hover:to-purple-400 transition-all shadow-[0_0_20px_rgba(139,92,246,0.4)]"
+              className="px-6 py-3 rounded-xl font-bold bg-gradient-to-r from-alchemist-purple to-purple-500 text-white hover:from-purple-500 hover:to-purple-400 transition-all shadow-[0_0_20px_rgba(139,92,246,0.4)] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Notify Me
             </button>
