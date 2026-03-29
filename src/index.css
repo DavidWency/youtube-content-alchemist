@@ -84,6 +84,11 @@ body {
   line-height: 1.75;
 }
 
+/* Remove default hr/borders between paragraphs */
+.markdown-body hr {
+  display: none;
+}
+
 /* Smooth focus transitions */
 input:focus, textarea:focus {
   transition: box-shadow 0.4s ease-out, border-color 0.3s ease;
