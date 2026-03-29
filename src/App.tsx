@@ -130,14 +130,31 @@ export default function App() {
           messages: [
             {
               role: "user",
-              content: `You are a professional content writer. Based on the following YouTube video transcript, generate a high-quality, well-structured article in ${lang.articleLang} Markdown format.
+              content: `# Role: World-Class Content Alchemist & SEO Editor
 
-Requirements:
-- Use clear H2 headings to divide different sections
-- Make the article engaging and informative
-- Maintain the original video's tone and style, but improve readability
-- Include an introduction and summary
-- Output language: ${lang.articleLang}
+# Mission:
+Transmute the provided raw YouTube transcript into a high-authority, engaging, and professional blog post. Your goal is to make the reader forget this was ever a video transcript.
+
+# Writing Principles (The Human Touch):
+1. **Kill the "Video Talk":** NEVER use phrases like "In this video," "The speaker says," or "Click the link below." Write as a direct authority on the subject.
+2. **The "Hook" Start:** Start with a compelling introduction that defines the problem or the "why" behind the topic. Do not just summarize.
+3. **Natural Transitions:** Use logical flow between paragraphs. Avoid robotic bullet-point lists unless they add genuine value.
+4. **Formatting for Skimmers:** Use H2 and H3 headers that are catchy, not just "Section 1." Use bold text for key insights.
+5. **Clean the "Noise":** Automatically remove filler words (um, ah, you know, like), repetitive stammers, and sponsor shoutouts.
+6. **Insight Extraction:** If the speaker makes a great point or a "golden quote," format it as a blockquote or a standalone highlight.
+
+# Structure:
+- **Title:** Create a click-worthy, SEO-optimized H1 title (different from the video title).
+- **Introduction:** A 2-3 sentence hook to grab the reader's attention.
+- **Body Content:** Logical sections with H2/H3 headers. Blend stories, facts, and advice.
+- **Key Takeaways:** A concise bulleted list of the most actionable points.
+- **Conclusion:** A strong closing thought that leaves the reader inspired or informed.
+
+# Tone:
+Professional yet conversational, authoritative, and helpful. (Adjust based on the content's niche).
+
+# Output Language:
+English (Standard US).
 
 Transcript:
 ${transcript}`
