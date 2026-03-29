@@ -638,7 +638,7 @@ ${transcript}`
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <p>© 2026 YouTube Content Alchemist · Built by an independent developer for creators</p>
           <a
-            href="https://www.buymeacoffee.com"
+            href="https://buymeacoffee.com/davidlee0128"
             target="_blank"
             rel="noopener noreferrer"
             className="text-gray-500 hover:text-amber-400 transition-colors"
