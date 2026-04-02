@@ -82,20 +82,20 @@ export default {
     if (url.pathname === '/api/articles' && request.method === 'POST') {
       try {
         const body = await request.json();
-        const { id, title, content, summary, video_url, status } = body;
+        const { video_id, title, content, summary, status } = body;
 
-        if (!id || !title || !content) {
-          return jsonResponse({ error: 'Missing required fields: id, title, content' }, 400);
+        if (!video_id || !title || !content) {
+          return jsonResponse({ error: 'Missing required fields: video_id, title, content' }, 400);
         }
 
         const articleStatus = status || 'published';
         
         await env.youtube_alchemist_db
-          .prepare(`INSERT OR REPLACE INTO articles (id, title, content, summary, video_url, status, created_at) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`)
-          .bind(id, title, content, summary || '', video_url || '', articleStatus)
+          .prepare(`INSERT OR REPLACE INTO articles (video_id, title, content, summary, status, created_at) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`)
+          .bind(video_id, title, content, summary || '', articleStatus)
           .run();
 
-        return jsonResponse({ success: true, id }, 201);
+        return jsonResponse({ success: true, video_id }, 201);
       } catch (err) {
         console.error('Save article error:', err);
         return jsonResponse({ error: 'Failed to save article' }, 500);
@@ -131,15 +131,15 @@ export default {
       }
     }
 
-    // GET /api/articles/:id - Get single article
+    // GET /api/articles/:video_id - Get article by video_id
     const articleMatch = url.pathname.match(/^\/api\/articles\/(.+)$/);
     if (articleMatch && request.method === 'GET') {
       try {
-        const articleId = articleMatch[1];
+        const videoId = articleMatch[1];
         
         const result = await env.youtube_alchemist_db
-          .prepare('SELECT * FROM articles WHERE id = ?')
-          .bind(articleId)
+          .prepare('SELECT * FROM articles WHERE video_id = ?')
+          .bind(videoId)
           .first();
 
         if (!result) {

@@ -270,11 +270,10 @@ ${transcript}`
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              id: videoId || `manual-${Date.now()}`,
+              video_id: videoId || `manual-${Date.now()}`,
               title: videoTitle,
               content: text,
               summary: summary,
-              video_url: url || '',
               status: 'published',
             }),
           });
