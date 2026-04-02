@@ -369,8 +369,8 @@
   <script>
     // API base for fetching articles
     const API_BASE = 'https://api.youtube-alchemist.com';
-    // Use relative paths for article links
-    const ARTICLE_BASE = '/article';
+    // Article pages are served by Worker on the API subdomain
+    const ARTICLE_BASE = 'https://api.youtube-alchemist.com/article';
     
     function getThumbnailUrl(videoId) {
       return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
