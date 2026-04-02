@@ -91,7 +91,7 @@ export default {
         const articleStatus = status || 'published';
         
         await env.youtube_alchemist_db
-          .prepare(`INSERT INTO articles (id, title, content, summary, video_url, status) VALUES (?, ?, ?, ?, ?, ?)`)
+          .prepare(`INSERT OR REPLACE INTO articles (id, title, content, summary, video_url, status, created_at) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`)
           .bind(id, title, content, summary || '', video_url || '', articleStatus)
           .run();
 
