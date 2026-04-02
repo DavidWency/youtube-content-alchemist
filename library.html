@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Library — YouTube Alchemist</title>
+  <meta name="description" content="Discover SEO-optimized articles converted from YouTube videos. A curated library of knowledge, distilled from the best video content.">
+  <meta property="og:title" content="Library — YouTube Alchemist">
+  <meta property="og:description" content="Discover SEO-optimized articles converted from YouTube videos.">
+  <meta property="og:type" content="website">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --bg: #0A0A0B;
+      --gold: #FACC15;
+      --gold-start: #FDE047;
+      --gold-end: #EAB308;
+      --purple: #A855F7;
+      --text: #F4F4F5;
+      --text-muted: #A1A1AA;
+      --border: rgba(255,255,255,0.1);
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    
+    /* Header */
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 20px 0;
+      position: sticky;
+      top: 0;
+      background: rgba(10,10,11,0.8);
+      backdrop-filter: blur(20px);
+      z-index: 100;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    
+    header .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+    
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--purple), var(--gold));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+    
+    .logo-text {
+      font-weight: 700;
+      font-size: 1.2rem;
+      background: linear-gradient(to right, var(--gold-start), var(--gold-end));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: 32px;
+    }
+    
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: color 0.2s;
+    }
+    
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: var(--text);
+    }
+    
+    .nav-links a.active {
+      color: var(--gold);
+    }
+    
+    /* Hero */
+    .hero {
+      padding: 80px 0 60px;
+      text-align: center;
+    }
+    
+    .hero h1 {
+      font-size: 3.5rem;
+      font-weight: 800;
+      margin-bottom: 16px;
+      background: linear-gradient(to right, var(--gold-start), var(--gold-end));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .hero p {
+      color: var(--text-muted);
+      font-size: 1.2rem;
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+    
+    .hero .stats {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      margin-top: 40px;
+    }
+    
+    .stat {
+      text-align: center;
+    }
+    
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--gold);
+    }
+    
+    .stat-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    /* Grid */
+    .library-section {
+      padding: 20px 0 80px;
+    }
+    
+    .grid {
+      columns: 4;
+      column-gap: 20px;
+    }
+    
+    @media (max-width: 1200px) {
+      .grid { columns: 3; }
+    }
+    
+    @media (max-width: 900px) {
+      .grid { columns: 2; }
+    }
+    
+    @media (max-width: 600px) {
+      .grid { columns: 1; }
+    }
+    
+    .card {
+      break-inside: avoid;
+      margin-bottom: 20px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(250, 204, 21, 0.4);
+      box-shadow: 0 8px 40px rgba(250, 204, 21, 0.15);
+    }
+    
+    .card:hover .card-image img {
+      transform: scale(1.05);
+    }
+    
+    .card-image {
+      width: 100%;
+      overflow: hidden;
+      background: #111;
+    }
+    
+    .card-image img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+    
+    .card-content {
+      padding: 20px;
+    }
+    
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      line-height: 1.4;
+      margin-bottom: 10px;
+      color: var(--text);
+    }
+    
+    .card-summary {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    .card-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    
+    .card-video-id {
+      font-size: 0.75rem;
+      color: var(--purple);
+      background: rgba(168, 85, 247, 0.1);
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+    
+    .card-date {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    
+    /* Loading & Empty */
+    .loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 0;
+      gap: 16px;
+    }
+    
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .loading-text {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 80px 0;
+    }
+    
+    .empty-state .icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      opacity: 0.3;
+    }
+    
+    .empty-state h3 {
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+    }
+    
+    .empty-state p {
+      color: var(--text-muted);
+    }
+    
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 0;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    
+    footer a {
+      color: var(--purple);
+      text-decoration: none;
+    }
+    
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <a href="https://youtube-alchemist.com" class="logo">
+        <div class="logo-icon">⚗️</div>
+        <span class="logo-text">YouTube Alchemist</span>
+      </a>
+      <nav class="nav-links">
+        <a href="https://youtube-alchemist.com">Home</a>
+        <a href="/library" class="active">Library</a>
+      </nav>
+    </div>
+  </header>
+  
+  <section class="hero">
+    <div class="container">
+      <h1>Public Library</h1>
+      <p>Discover SEO-optimized articles converted from the world's best YouTube videos. Knowledge, distilled.</p>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-number" id="article-count">—</div>
+          <div class="stat-label">Articles</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number">100%</div>
+          <div class="stat-label">Free to Read</div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <section class="library-section">
+    <div class="container">
+      <div class="grid" id="articles-grid">
+        <div class="loading">
+          <div class="loading-spinner"></div>
+          <div class="loading-text">Loading library...</div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <footer>
+    <div class="container">
+      <p>Generated by <a href="https://youtube-alchemist.com">YouTube Alchemist</a></p>
+    </div>
+  </footer>
+  
+  <script>
+    const API_BASE = import.meta.env.VITE_API_URL || 'https://youtube-alchemist-api.philip-lwj.workers.dev';
+    
+    function getThumbnailUrl(videoId) {
+      return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+    }
+    
+    function formatDate(dateStr) {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+    }
+    
+    function createCard(article) {
+      const card = document.createElement('a');
+      card.href = `/article/${article.video_id}`;
+      card.className = 'card';
+      card.target = '_blank';
+      
+      card.innerHTML = `
+        <div class="card-image">
+          <img src="${getThumbnailUrl(article.video_id)}" 
+               alt="${article.title}"
+               loading="lazy"
+               onerror="this.src='https://i.ytimg.com/vi/${article.video_id}/mqdefault.jpg'">
+        </div>
+        <div class="card-content">
+          <h3 class="card-title">${escapeHtml(article.title)}</h3>
+          <p class="card-summary">${escapeHtml(article.summary || '')}</p>
+          <div class="card-meta">
+            <span class="card-video-id">${article.video_id}</span>
+            <span class="card-date">${formatDate(article.created_at)}</span>
+          </div>
+        </div>
+      `;
+      
+      return card;
+    }
+    
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+    
+    function renderArticles(articles) {
+      const grid = document.getElementById('articles-grid');
+      
+      if (!articles || articles.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state">
+            <div class="icon">📚</div>
+            <h3>Library is Empty</h3>
+            <p>No articles published yet. Check back soon!</p>
+          </div>
+        `;
+        return;
+      }
+      
+      document.getElementById('article-count').textContent = articles.length;
+      
+      grid.innerHTML = '';
+      articles.forEach(article => {
+        grid.appendChild(createCard(article));
+      });
+    }
+    
+    async function loadArticles() {
+      try {
+        const resp = await fetch(`${API_BASE}/api/articles?status=published&limit=100`);
+        const data = await resp.json();
+        renderArticles(data.articles);
+      } catch (err) {
+        console.error('Failed to load articles:', err);
+        const grid = document.getElementById('articles-grid');
+        grid.innerHTML = `
+          <div class="empty-state">
+            <div class="icon">⚠️</div>
+            <h3>Failed to Load</h3>
+            <p>Please try again later.</p>
+          </div>
+        `;
+      }
+    }
+    
+    loadArticles();
+  </script>
+</body>
+</html>

@@ -79,6 +79,14 @@ export default defineConfig(({ mode }) => {
         }
       }
     ],
+    build: {
+      rollupOptions: {
+        input: {
+          main: './index.html',
+          library: './library.html',
+        },
+      },
+    },
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
     },
