@@ -367,7 +367,8 @@
   </footer>
   
   <script>
-    const API_BASE = import.meta.env.VITE_API_URL || 'https://youtube-alchemist-api.philip-lwj.workers.dev';
+    // Use relative paths - works correctly when custom domain is configured
+    const ARTICLE_BASE = '/article';
     
     function getThumbnailUrl(videoId) {
       return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
@@ -384,7 +385,7 @@
     
     function createCard(article) {
       const card = document.createElement('a');
-      card.href = `/article/${article.video_id}`;
+      card.href = `${ARTICLE_BASE}/${article.video_id}`;
       card.className = 'card';
       card.target = '_blank';
       

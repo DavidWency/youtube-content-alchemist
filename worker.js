@@ -206,24 +206,41 @@ export default {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   ${metaTags}
   <style>
+    :root {
+      --bg: #0A0A0B;
+      --gold: #FACC15;
+      --gold-start: #FDE047;
+      --gold-end: #EAB308;
+      --purple: #A855F7;
+      --text: #F4F4F5;
+      --text-muted: #A1A1AA;
+      --border: rgba(255,255,255,0.1);
+    }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }
-    header { border-bottom: 1px solid #eee; padding: 20px 0; margin-bottom: 30px; }
-    header a { color: #8b5cf6; text-decoration: none; }
-    .meta { color: #666; font-size: 0.9rem; margin-bottom: 20px; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: var(--text); background: var(--bg); max-width: 800px; margin: 0 auto; padding: 40px 24px; }
+    header { border-bottom: 1px solid var(--border); padding: 20px 0; margin-bottom: 40px; }
+    header a { color: var(--purple); text-decoration: none; font-size: 0.95rem; transition: color 0.2s; }
+    header a:hover { color: var(--gold); }
+    .meta { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 24px; }
+    .meta a { color: var(--purple); text-decoration: none; }
+    .meta a:hover { text-decoration: underline; }
     .content { line-height: 1.8; }
-    .content h1 { font-size: 2rem; margin-bottom: 20px; color: #111; }
-    .content h2 { font-size: 1.5rem; margin: 30px 0 15px; color: #222; }
-    .content h3 { font-size: 1.2rem; margin: 20px 0 10px; }
-    .content p { margin-bottom: 15px; }
-    .content blockquote { border-left: 4px solid #8b5cf6; padding-left: 20px; margin: 20px 0; color: #555; font-style: italic; }
-    .content ul, .content ol { margin: 15px 0; padding-left: 25px; }
-    .content li { margin-bottom: 8px; }
-    .content strong { color: #111; }
-    .content pre { background: #f5f5f5; padding: 15px; border-radius: 8px; overflow-x: auto; margin: 20px 0; }
-    .content code { background: #f5f5f5; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
-    .video-link { display: inline-block; margin-top: 30px; padding: 10px 20px; background: #8b5cf6; color: white; text-decoration: none; border-radius: 8px; }
-    footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #eee; color: #999; font-size: 0.85rem; }
+    .content h1 { font-size: 2.5rem; margin-bottom: 24px; color: var(--text); font-weight: 800; background: linear-gradient(to right, var(--gold-start), var(--gold-end)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .content h2 { font-size: 1.5rem; margin: 40px 0 16px; color: var(--text); font-weight: 700; }
+    .content h3 { font-size: 1.2rem; margin: 28px 0 12px; color: var(--text); font-weight: 600; }
+    .content p { margin-bottom: 18px; color: var(--text); }
+    .content blockquote { border-left: 4px solid var(--purple); padding-left: 20px; margin: 24px 0; color: var(--text-muted); font-style: italic; background: rgba(168,85,247,0.05); padding: 16px 20px; border-radius: 0 8px 8px 0; }
+    .content ul, .content ol { margin: 16px 0; padding-left: 24px; color: var(--text); }
+    .content li { margin-bottom: 10px; }
+    .content strong { color: var(--text); font-weight: 600; }
+    .content pre { background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 16px; border-radius: 8px; overflow-x: auto; margin: 24px 0; }
+    .content code { background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; font-family: 'SF Mono', Monaco, monospace; font-size: 0.9em; }
+    .content pre code { background: none; padding: 0; }
+    .video-link { display: inline-block; margin-top: 40px; padding: 12px 24px; background: linear-gradient(to right, var(--purple), #9333ea); color: white; text-decoration: none; border-radius: 10px; font-weight: 600; transition: transform 0.2s, box-shadow 0.2s; }
+    .video-link:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(168,85,247,0.4); }
+    footer { margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.85rem; }
+    footer a { color: var(--purple); text-decoration: none; }
+    footer a:hover { color: var(--gold); }
   </style>
 </head>
 <body>
@@ -233,7 +250,7 @@ export default {
   <article>
     <h1>${escapeHtml(article.title)}</h1>
     <div class="meta">
-      <span>Video: <a href="${videoUrl}" target="_blank">${videoId}</a></span>
+      Video: <a href="${videoUrl}" target="_blank">${videoId}</a>
     </div>
     <div class="content">
       ${article.content}
