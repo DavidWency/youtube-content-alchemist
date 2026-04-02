@@ -367,7 +367,9 @@
   </footer>
   
   <script>
-    // Use relative paths - works correctly when custom domain is configured
+    // API base for fetching articles (Worker URL)
+    const API_BASE = 'https://youtube-alchemist-api.philip-lwj.workers.dev';
+    // Use relative paths for article links - works correctly when custom domain is configured
     const ARTICLE_BASE = '/article';
     
     function getThumbnailUrl(videoId) {
