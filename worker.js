@@ -1,6 +1,7 @@
 /**
  * Cloudflare Worker - YouTube Transcript API
  * Uses RapidAPI YouTube Transcript API
+ * D1 Database for article storage
  */
 
 const RAPIDAPI_HOST = 'youtube-transcript3.p.rapidapi.com';
@@ -22,6 +23,7 @@ export default {
       });
     }
 
+    // Transcript endpoint
     if (url.pathname === '/api/transcript') {
       const videoUrl = url.searchParams.get('url');
 
@@ -71,6 +73,83 @@ export default {
       } catch (err) {
         console.error('Subscribe error:', err);
         return jsonResponse({ error: 'Subscription failed' }, 500);
+      }
+    }
+
+    // === Articles API ===
+
+    // POST /api/articles - Save article
+    if (url.pathname === '/api/articles' && request.method === 'POST') {
+      try {
+        const body = await request.json();
+        const { id, title, content, summary, video_url, status } = body;
+
+        if (!id || !title || !content) {
+          return jsonResponse({ error: 'Missing required fields: id, title, content' }, 400);
+        }
+
+        const articleStatus = status || 'published';
+        
+        await env.youtube_alchemist_db
+          .prepare(`INSERT INTO articles (id, title, content, summary, video_url, status) VALUES (?, ?, ?, ?, ?, ?)`)
+          .bind(id, title, content, summary || '', video_url || '', articleStatus)
+          .run();
+
+        return jsonResponse({ success: true, id }, 201);
+      } catch (err) {
+        console.error('Save article error:', err);
+        return jsonResponse({ error: 'Failed to save article' }, 500);
+      }
+    }
+
+    // GET /api/articles - List articles
+    if (url.pathname === '/api/articles' && request.method === 'GET') {
+      try {
+        const status = url.searchParams.get('status');
+        const limit = parseInt(url.searchParams.get('limit') || '50');
+        
+        let query = 'SELECT * FROM articles';
+        const bindings = [];
+        
+        if (status) {
+          query += ' WHERE status = ?';
+          bindings.push(status);
+        }
+        
+        query += ' ORDER BY created_at DESC LIMIT ?';
+        bindings.push(limit);
+
+        const result = await env.youtube_alchemist_db
+          .prepare(query)
+          .bind(...bindings)
+          .all();
+
+        return jsonResponse({ articles: result.results });
+      } catch (err) {
+        console.error('List articles error:', err);
+        return jsonResponse({ error: 'Failed to list articles' }, 500);
+      }
+    }
+
+    // GET /api/articles/:id - Get single article
+    const articleMatch = url.pathname.match(/^\/api\/articles\/(.+)$/);
+    if (articleMatch && request.method === 'GET') {
+      try {
+        const articleId = articleMatch[1];
+        
+        const result = await env.youtube_alchemist_db
+          .prepare('SELECT * FROM articles WHERE id = ?')
+          .bind(articleId)
+          .first();
+
+        if (!result) {
+          return jsonResponse({ error: 'Article not found' }, 404);
+        }
+
+        return jsonResponse({ article: result });
+      } catch (err) {
+        console.error('Get article error:', err);
+        return jsonResponse({ error: 'Failed to get article' }, 500);
       }
     }
 
