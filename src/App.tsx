@@ -240,6 +240,50 @@ ${transcript}`
       const text = fullText.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
       setStreamingText('');
       setSummary(text);
+
+      // Save article to D1 database
+      try {
+        const apiBase = import.meta.env.VITE_API_URL;
+        if (apiBase) {
+          // Extract title from H1, first paragraph as summary
+          const titleMatch = text.match(/^#\s+(.+)$/m);
+          const title = titleMatch ? titleMatch[1].trim() : `YouTube Article - ${videoId}`;
+          const firstParaMatch = text.match(/^#.*$\n*\s*\n*([^#]+)/m);
+          let summary = firstParaMatch ? firstParaMatch[1].trim().replace(/\n+/g, ' ') : '';
+          if (summary.length > 150) {
+            summary = summary.substring(0, 147) + '...';
+          }
+
+          // Get video title from YouTube oEmbed if we have a videoId
+          let videoTitle = title;
+          if (videoId && url) {
+            try {
+              const oembedResp = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`);
+              if (oembedResp.ok) {
+                const oembed = await oembedResp.json();
+                videoTitle = oembed.title || title;
+              }
+            } catch {}
+          }
+
+          await fetch(`${apiBase}/api/articles`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: videoId || `manual-${Date.now()}`,
+              title: videoTitle,
+              content: text,
+              summary: summary,
+              video_url: url || '',
+              status: 'published',
+            }),
+          });
+          console.log('Article saved to database');
+        }
+      } catch (err) {
+        console.error('Failed to save article:', err);
+        // Don't block UI for save failure
+      }
     } catch (err: any) {
       console.error(err);
       setError(err.message || 'An unexpected error occurred');
