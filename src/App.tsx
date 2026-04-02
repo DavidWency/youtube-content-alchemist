@@ -245,32 +245,37 @@ ${transcript}`
       try {
         const apiBase = import.meta.env.VITE_API_URL;
         if (apiBase) {
+          // Extract video_id directly from URL at save time
+          const saveVideoId = !manualMode && url ? extractVideoIdFromUrl(url) : null;
+          if (!saveVideoId) {
+            console.log('Skipping save - no video_id available');
+            return;
+          }
+          
           // Extract title from H1, first paragraph as summary
           const titleMatch = text.match(/^#\s+(.+)$/m);
-          const title = titleMatch ? titleMatch[1].trim() : `YouTube Article - ${videoId}`;
+          const title = titleMatch ? titleMatch[1].trim() : `YouTube Article - ${saveVideoId}`;
           const firstParaMatch = text.match(/^#.*$\n*\s*\n*([^#]+)/m);
           let summary = firstParaMatch ? firstParaMatch[1].trim().replace(/\n+/g, ' ') : '';
           if (summary.length > 150) {
             summary = summary.substring(0, 147) + '...';
           }
 
-          // Get video title from YouTube oEmbed if we have a videoId
+          // Get video title from YouTube oEmbed
           let videoTitle = title;
-          if (videoId && url) {
-            try {
-              const oembedResp = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`);
-              if (oembedResp.ok) {
-                const oembed = await oembedResp.json();
-                videoTitle = oembed.title || title;
-              }
-            } catch {}
-          }
+          try {
+            const oembedResp = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`);
+            if (oembedResp.ok) {
+              const oembed = await oembedResp.json();
+              videoTitle = oembed.title || title;
+            }
+          } catch {}
 
           await fetch(`${apiBase}/api/articles`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              video_id: videoId || `manual-${Date.now()}`,
+              video_id: saveVideoId,
               title: videoTitle,
               content: text,
               summary: summary,
@@ -281,7 +286,6 @@ ${transcript}`
         }
       } catch (err) {
         console.error('Failed to save article:', err);
-        // Don't block UI for save failure
       }
     } catch (err: any) {
       console.error(err);
